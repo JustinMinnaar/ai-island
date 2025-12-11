@@ -55,11 +55,16 @@ export const CONFIG = {
 
     // Build tools
     BUILD_TOOLS: {
+      SELECT: 'select',
       ROOM: 'room',
       WALL: 'wall',
       FLOOR: 'floor',
       DOOR: 'door',
-      ITEM: 'item'
+      ITEM: 'item',
+      ERASER: 'eraser',
+      DELETE_WALL: 'delete_wall',
+      DELETE_FLOOR: 'delete_floor',
+      DELETE_DOOR: 'delete_door'
     },
 
     // Cell scale

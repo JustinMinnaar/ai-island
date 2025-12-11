@@ -55,7 +55,7 @@ class HistoryManager {
         const action = this.undoStack.pop();
         action.undo();
         this.redoStack.push(action);
-        renderer.dirty = true;
+        if (renderer) renderer.dirty = true;
 
         console.log(`↶ Undo: ${action.type}`);
         return true;
@@ -70,7 +70,7 @@ class HistoryManager {
         const action = this.redoStack.pop();
         action.redo();
         this.undoStack.push(action);
-        renderer.dirty = true;
+        if (renderer) renderer.dirty = true;
 
         console.log(`↷ Redo: ${action.type}`);
         return true;

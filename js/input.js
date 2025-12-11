@@ -46,38 +46,54 @@ class InputHandler {
         // Left click
         if (e.button === 0) {
             if (buildMode.active) {
-                const tool = buildMode.currentTool;
+                const tool = buildMode.currentToolId;
 
-                // Door tool uses click-based placement only (no drag)
-                // Wall tool allows drag-drawing but needs edge detection
-                if (tool === CONFIG.GAME.BUILD_TOOLS.WALL) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
+                if (buildMode.eraseMode) return; // Prevent drawing if erase mode is active
+
+                // Calculate mouse position once for the tool logic
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                // For Door tool we might want edge detection
+                if (tool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
+                    // Existing specific door placement logic
+                    const edge = renderer.getClosestEdge(mouseX, mouseY);
+                    if (edge) buildMode.startDrawing(edge);
+                }
+                // Wall Tool with edge detection
+                else if (tool === CONFIG.GAME.BUILD_TOOLS.WALL) {
                     const edge = renderer.getClosestEdge(mouseX, mouseY);
                     if (edge) {
-                        // Store edge as start position for wall drawing
                         buildMode.startDrawing({ x: edge.x, y: 0, z: edge.z, edge: edge.direction });
                     }
-                } else if (tool !== CONFIG.GAME.BUILD_TOOLS.DOOR) {
-                    // Floor and other tools use cell position
-                    const rect = this.canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
-                    const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
-                    buildMode.startDrawing(worldPos);
                 }
-            } else {
+                // Area Tools (Floor, Room, Delete Tools)
+                else {
+                    const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
+                    if (worldPos) {
+                        buildMode.startDrawing(worldPos);
+                    }
+                }
+                // For tools that start drawing immediately on mousedown (like Floor, Room, Delete Area)
+                // or if no specific tool logic was triggered, we set isDragging to true.
+                // Wall and Door tools handle their startDrawing internally based on edge detection.
+                if (tool === CONFIG.GAME.BUILD_TOOLS.FLOOR ||
+                    tool === CONFIG.GAME.BUILD_TOOLS.ROOM ||
+                    tool === CONFIG.GAME.BUILD_TOOLS.DELETE_WALL ||
+                    tool === CONFIG.GAME.BUILD_TOOLS.DELETE_FLOOR ||
+                    tool === CONFIG.GAME.BUILD_TOOLS.DELETE_DOOR) {
+                    this.isDragging = true;
+                }
+            }
+            // Right click for panning
+            else if (e.button === 2) {
                 this.isDragging = true;
             }
-        }
-        // Right click for panning
-        else if (e.button === 2) {
-            this.isDragging = true;
-        }
 
-        this.lastMouseX = e.clientX;
-        this.lastMouseY = e.clientY;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        }
     }
 
     onMouseMove(e) {
@@ -87,7 +103,7 @@ class InputHandler {
 
         // Determine Hover State based on Tool
         if (buildMode.active) {
-            const tool = buildMode.currentTool;
+            const tool = buildMode.currentToolId;
 
             if (tool === CONFIG.GAME.BUILD_TOOLS.WALL || tool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
                 // Edge Selection Mode
@@ -97,11 +113,18 @@ class InputHandler {
                 } else {
                     renderer.setHoverCursor(null);
                 }
-            } else if (tool === CONFIG.GAME.BUILD_TOOLS.FLOOR) {
-                // Corner Grip Mode
+            } else if (tool === CONFIG.GAME.BUILD_TOOLS.FLOOR ||
+                tool === CONFIG.GAME.BUILD_TOOLS.DELETE_WALL ||
+                tool === CONFIG.GAME.BUILD_TOOLS.DELETE_FLOOR ||
+                tool === CONFIG.GAME.BUILD_TOOLS.DELETE_DOOR) {
+                // Corner Grip Mode for Floors and Area Deletes
                 const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
                 if (worldPos) {
-                    renderer.setHoverCursor(worldPos, 'CORNERS');
+                    const isDelete = (tool === CONFIG.GAME.BUILD_TOOLS.DELETE_WALL ||
+                        tool === CONFIG.GAME.BUILD_TOOLS.DELETE_FLOOR ||
+                        tool === CONFIG.GAME.BUILD_TOOLS.DELETE_DOOR);
+                    const color = isDelete ? 0xff0000 : null; // Red for delete, null (default/blue) for floor
+                    renderer.setHoverCursor(worldPos, 'CORNERS', color);
                 } else {
                     renderer.setHoverCursor(null);
                 }
@@ -113,8 +136,19 @@ class InputHandler {
 
             // Drag-Drawing (Only for Floors/Rooms now? Walls are single-click)
             if (buildMode.isDrawing) {
+                this.isDragging = true; // Mark as dragging so onClick doesn't fire
                 const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
                 buildMode.updateDrawing(worldPos);
+            }
+            // Drag-Erasing
+            else if (buildMode.eraseMode && (this.isDragging || e.buttons === 1)) { // Check buttons or flag
+                // ... (Existing generic erase logic can stay, but won't trigger if DELETE_WALL is active unless eraseMode is set?)
+                // DELETE_WALL uses isDrawing flow, not eraseMode flow.
+                // So this block is skipped for DELETE_WALL tool.
+                const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
+                if (worldPos) {
+                    this.performEraseAt(mouseX, mouseY);
+                }
             }
         } else {
             // Select Mode -> Block Selector
@@ -137,6 +171,7 @@ class InputHandler {
         if (e.button === 0 && buildMode.active && buildMode.isDrawing) {
             // Only finish drawing if we started it (Mouse Down).
             // Walls/Doors don't start drawing on MouseDown anymore, they act on Click.
+            // Wait, WallTool DOES start drawing on MouseDown now (we restored it).
             const rect = this.canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -144,7 +179,22 @@ class InputHandler {
             buildMode.finishDrawing(worldPos);
         }
 
-        this.isDragging = false;
+        // Delay resetting isDragging slightly to ensure onClick sees it? 
+        // No, onClick happens AFTER onMouseUp usually. 
+        // If I set it false here, onClick will execute.
+        // We want onClick to recognize "It WAS dragging".
+        // But InputHandler usually resets it here.
+        // Standard solution: Set a "wasDragging" flag or handle Click logic here?
+
+        // Actually, if we consumed the event in finishDrawing, we don't want click.
+        // Let's keep isDragging false, but maybe onClick needs to check if we 'just' finished.
+
+        // Simple Fix: Move `this.isDragging = false` to the very end or use a timeout?
+        // Or in onClick, check a flag `blockNextClick`.
+
+        setTimeout(() => {
+            this.isDragging = false;
+        }, 50);
     }
 
     onMouseLeave(e) {
@@ -154,13 +204,15 @@ class InputHandler {
 
     onWheel(e) {
         e.preventDefault();
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-        const delta = e.deltaY > 0 ? -CONFIG.RENDER.ZOOM_STEP : CONFIG.RENDER.ZOOM_STEP;
-        const didZoom = renderer.zoom(delta);
+        const delta = e.deltaY > 0 ? -1 : 1; // Normalize delta direction
+        // Pass mouse position to zoom for "zoom to cursor"
+        renderer.zoom(delta, mouseX, mouseY);
 
-        if (didZoom) {
-            this.dispatchZoomEvent(renderer.camera.zoom);
-        }
+        this.dispatchZoomEvent(renderer.camera.zoom);
     }
 
     onClick(e) {
@@ -172,48 +224,11 @@ class InputHandler {
 
         // 0. Handle Erase Mode (Delete key held)
         if (buildMode.eraseMode) {
-            const edge = renderer.getClosestEdge(mouseX, mouseY);
-            if (edge) {
-                const { x, z, direction } = edge;
-                const y = 0;
-
-                // Check for door first
-                const door = world.getDoor(x, y, z, direction);
-                if (door) {
-                    world.removeDoor(x, y, z, direction);
-                    history.record(history.createDoorRemoveAction(x, y, z, direction, door));
-                    renderer.dirty = true;
-                    console.log('🗑️ Erased door');
-                    return;
-                }
-
-                // Check for wall
-                const wall = world.getWall(x, y, z, direction);
-                if (wall) {
-                    world.removeWall(x, y, z, direction);
-                    history.record(history.createWallRemoveAction(x, y, z, direction, wall));
-                    renderer.dirty = true;
-                    console.log('🗑️ Erased wall');
-                    return;
-                }
-            }
-
-            // Check for floor
-            const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
-            if (worldPos) {
-                const cell = world.getCell(worldPos.x, worldPos.y, worldPos.z);
-                if (cell && cell.type === CONFIG.GAME.CELL_TYPES.FLOOR) {
-                    world.removeCell(worldPos.x, worldPos.y, worldPos.z);
-                    history.record(history.createFloorRemoveAction(worldPos.x, worldPos.y, worldPos.z, cell));
-                    renderer.dirty = true;
-                    console.log('🗑️ Erased floor');
-                    return;
-                }
-            }
+            this.performEraseAt(mouseX, mouseY);
         }
 
         // 1. Handle Door Tool (Click Edge to place/cycle)
-        if (buildMode.active && buildMode.currentTool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
+        if (buildMode.active && !buildMode.eraseMode && buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.DOOR) {
             const edge = renderer.getClosestEdge(mouseX, mouseY);
             if (edge) {
                 buildMode.handleDoorClick(edge);
@@ -226,22 +241,48 @@ class InputHandler {
 
         // 2. Handle Interaction (Open/Close Door)
         // Check edge for door
+        // 2. Handle Interaction (Open/Close Door) OR Selection
         const edge = renderer.getClosestEdge(mouseX, mouseY);
         if (edge) {
             const door = world.getDoor(edge.x, 0, edge.z, edge.direction);
-            if (door) {
-                // If in select mode (not building), toggle door
-                if (!buildMode.active || buildMode.currentTool === CONFIG.GAME.BUILD_TOOLS.SELECT) {
-                    const isOpen = world.toggleDoor(edge.x, 0, edge.z, edge.direction);
-                    renderer.dirty = true;
-                    console.log(`🚪 Door ${isOpen ? 'Opened' : 'Closed'}`);
+            const wall = world.getWall(edge.x, 0, edge.z, edge.direction);
+
+            if (buildMode.active && buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+                // SELECT Mode - Select the edge object (Door or Wall)
+                if (door) {
+                    window.dispatchEvent(new CustomEvent('cellselect', { detail: { ...edge, type: 'door' } }));
+                    // Don't toggle if selecting? Or toggle on double click?
+                    // User said "Once placed, I can then select it with the select mode, to edit it."
+                    // So purely select.
                     return;
+                } else if (wall) {
+                    window.dispatchEvent(new CustomEvent('cellselect', { detail: { ...edge, type: 'wall' } }));
+                    return;
+                }
+            }
+
+            // Toggle Logic (if not explicitly selecting for edit)
+            if (door) {
+                if (!buildMode.active || buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+                    // If in select mode, maybe we want to select AND toggle? Or just select?
+                    // User "Select mode... to edit it". implies selection priority.
+                    // But "click doors to open" is also standard.
+                    // Let's toggle if no properties panel open? Or maybe just toggle only if not clicking edit fields.
+                    // Current compromise: If Select Tool, SELECT. (User can edit properties like "Open" in panel).
+                    // If Hand/None Tool, TOGGLE.
+
+                    if (!buildMode.active) {
+                        const isOpen = world.toggleDoor(edge.x, 0, edge.z, edge.direction);
+                        renderer.dirty = true;
+                        console.log(`🚪 Door ${isOpen ? 'Opened' : 'Closed'}`);
+                        return;
+                    }
                 }
             }
         }
 
         // Also check if clicking on cell that door swings into
-        if (!buildMode.active || buildMode.currentTool === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+        if (!buildMode.active || buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
             // Check all 4 edges of clicked cell for doors that swing into it
             const directions = [
                 { dir: CONFIG.GAME.EDGE_DIRECTIONS.NORTH, dx: 0, dz: -1 },
@@ -315,26 +356,30 @@ class InputHandler {
 
         // Undo/Redo
         if (e.ctrlKey || e.metaKey) {
+            // ... (existing undo logic)
             if (e.key === 'z' || e.key === 'Z') {
-                if (e.shiftKey) {
-                    history.redo();
-                } else {
-                    history.undo();
-                }
-                e.preventDefault();
-                return;
+                if (e.shiftKey) { history.redo(); } else { history.undo(); }
+                e.preventDefault(); return;
             }
             if (e.key === 'y' || e.key === 'Y') {
-                history.redo();
-                e.preventDefault();
-                return;
+                history.redo(); e.preventDefault(); return;
             }
         }
 
-        // Hold Delete for erase mode
+        // Hold Delete for erase mode OR Contextual Tool Switch
         if (e.key === 'Delete') {
-            buildMode.eraseMode = true;
-            renderer.setEraseCursor(true);
+            if (buildMode.active) {
+                // If in WALL mode -> Switch to DELETE_WALL
+                if (buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.WALL) {
+                    this.previousToolId = buildMode.currentToolId;
+                    buildMode.setTool(CONFIG.GAME.BUILD_TOOLS.DELETE_WALL);
+                }
+                // Else -> Standard Erase Mode flag (for other tools)
+                else {
+                    buildMode.eraseMode = true;
+                    renderer.setEraseCursor(true);
+                }
+            }
         }
 
         switch (e.key) {
@@ -349,9 +394,9 @@ class InputHandler {
                 this.dispatchCameraResetEvent();
                 break;
 
-            case 'f':
-            case 'F':
-                // Focus on selection
+            // ...
+            case 'f': case 'F':
+                // ... (focus logic)
                 if (world.selectedEntity) {
                     const ent = world.getEntity(world.selectedEntity);
                     if (ent) renderer.centerOn(ent.x, ent.z);
@@ -360,14 +405,12 @@ class InputHandler {
                 }
                 break;
 
-            case '+':
-            case '=':
+            case '+': case '=':
                 renderer.zoom(CONFIG.RENDER.ZOOM_STEP);
                 this.dispatchZoomEvent(renderer.camera.zoom);
                 break;
 
-            case '-':
-            case '_':
+            case '-': case '_':
                 renderer.zoom(-CONFIG.RENDER.ZOOM_STEP);
                 this.dispatchZoomEvent(renderer.camera.zoom);
                 break;
@@ -379,10 +422,24 @@ class InputHandler {
         this.keys[e.key] = false;
         this.updateMovementInput();
 
-        // Release Delete key - exit erase mode
+        // Release Delete key
         if (e.key === 'Delete') {
-            buildMode.eraseMode = false;
-            renderer.setEraseCursor(false);
+            if (buildMode.active) {
+                // If we switched tool contextually, switch back
+                if (this.previousToolId && buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.DELETE_WALL) {
+                    // If we were dragging, cancel the action!
+                    if (buildMode.isDrawing) {
+                        buildMode.cancelDrawing();
+                        this.isDragging = false; // Reset generic flag too
+                    }
+
+                    buildMode.setTool(this.previousToolId);
+                    this.previousToolId = null;
+                } else {
+                    buildMode.eraseMode = false;
+                    renderer.setEraseCursor(false);
+                }
+            }
         }
     }
 
@@ -413,6 +470,73 @@ class InputHandler {
 
     onTouchEnd(e) {
         this.isDragging = false;
+    }
+
+    performEraseAt(mouseX, mouseY) {
+        if (!buildMode.active) return;
+        const tool = buildMode.currentToolId;
+        const isEraser = tool === CONFIG.GAME.BUILD_TOOLS.ERASER;
+        const isRoom = tool === CONFIG.GAME.BUILD_TOOLS.ROOM;
+        const isWall = tool === CONFIG.GAME.BUILD_TOOLS.WALL;
+        const isDoor = tool === CONFIG.GAME.BUILD_TOOLS.DOOR;
+        const isFloor = tool === CONFIG.GAME.BUILD_TOOLS.FLOOR;
+
+        // 1. Check for Walls/Doors (Edges) - Allow in Wall, Door, Eraser, Room modes
+        if (isWall || isDoor || isEraser || isRoom) {
+            const edge = renderer.getClosestEdge(mouseX, mouseY);
+            if (edge) {
+                const { x, z, direction } = edge;
+
+                // Priority: Check Doors first (as they sit on walls)
+                if (isDoor || isEraser || isRoom || isWall) { // Wall mode implies deleting contained door akin to real delete?
+                    if (world.getDoor(x, 0, z, direction)) {
+                        world.removeDoor(x, 0, z, direction);
+                        history.record(history.createDoorRemoveAction(x, 0, z, direction, {}));
+                        if (renderer) renderer.markDirty();
+                        // If we are strictly in Door mode, stop here.
+                        if (isDoor) return;
+                    }
+                }
+
+                // Check Wall - Only if Wall, Eraser, or Room mode (Door mode shouldn't delete walls)
+                if (isWall || isEraser || isRoom) {
+                    if (world.getWall(x, 0, z, direction)) {
+                        world.removeWall(x, 0, z, direction);
+                        history.record(history.createWallRemoveAction(x, 0, z, direction, {}));
+                        if (renderer) renderer.markDirty();
+                        return; // Successfully deleted edge
+                    }
+                }
+            }
+        }
+
+        // 2. Check for Floors/Entities (Cells) - STRICTLY for Floor, Eraser, Room modes
+        if (isFloor || isEraser || isRoom) {
+            const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
+            if (worldPos) {
+                const { x, y, z } = worldPos;
+
+                // Check Entities (Eraser only?)
+                if (renderer) {
+                    const entities = world.getEntitiesAt(x, y, z);
+                    // Standard tools usually don't delete entities unless Eraser
+                    if (isEraser && entities.length > 0) {
+                        entities.forEach(ent => world.removeEntity(ent.id));
+                        renderer.markDirty();
+                        return;
+                    }
+                }
+
+                // Check Floor
+                const cell = world.getCell(x, y, z);
+                if (cell && cell.type === CONFIG.GAME.CELL_TYPES.FLOOR) {
+                    const oldData = { ...cell };
+                    world.removeCell(x, y, z);
+                    history.record(history.createFloorRemoveAction(x, y, z, oldData));
+                    if (renderer) renderer.markDirty();
+                }
+            }
+        }
     }
 
     // Custom event dispatchers

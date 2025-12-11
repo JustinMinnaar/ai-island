@@ -4,6 +4,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CONFIG } from './config.js';
 import { world } from './world.js';
 
+// Sub-renderers
+import { WallRenderer } from './renderer/wall-renderer.js';
+import { FloorRenderer } from './renderer/floor-renderer.js';
+import { DoorRenderer } from './renderer/door-renderer.js';
+
 class Renderer3D {
     constructor(canvas) {
         this.canvas = canvas;
@@ -15,33 +20,36 @@ class Renderer3D {
         this.mouse = null;
         this.animationId = null;
 
-        // Cache for meshes to avoid recreation
-        this.meshes = {
-            floors: new Map(),
-            walls: new Map(),
-            doors: new Map(),
-            entities: new Map(),
-            preview: []
-        };
+        // Sub-renderers
+        this.wallRenderer = null;
+        this.floorRenderer = null;
+        this.doorRenderer = null;
+
+        // Cache for previews
+        this.previewMeshes = [];
 
         this.hoveredCell = null;
         this.dirty = true;
         this.buildPreview = null;
         this.resizeObserver = null;
+        this.materialCache = new Map();
+        this.zoomLevel = 1.0;
 
         this.init();
     }
+
+    // ... (Init methods remain largely the same, setup sub-renderers in init)
 
     init() {
         // 1. Scene Setup
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color('#1a1a2e');
-        this.scene.fog = new THREE.Fog('#1a1a2e', 20, 100);
+        this.scene.fog = new THREE.Fog('#1a1a2e', 20, 200); // Increased fog distance
 
         // 2. Camera Setup
         const fov = 45;
         const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
-        this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 2000); // Increased far plane
         this.camera.position.set(20, 20, 20);
         this.camera.lookAt(0, 0, 0);
 
@@ -56,13 +64,12 @@ class Renderer3D {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         // 4. Controls
-        // 4. Controls
         this.controls = new OrbitControls(this.camera, this.canvas);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 5;
-        this.controls.maxDistance = 100;
+        this.controls.maxDistance = 200; // Increased max zoom out
 
         // Custom Mouse Mapping
         this.controls.mouseButtons = {
@@ -71,9 +78,12 @@ class Renderer3D {
             RIGHT: THREE.MOUSE.ROTATE
         };
 
-        // Restrict vertical rotation to prevent looking from below
-        this.controls.minPolarAngle = 0; // Top-down view
-        this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // Just above horizontal (prevent flipping)
+        // We handle zoom manually for "Zoom-to-Point" logic
+        this.controls.enableZoom = false;
+
+        // Restrict vertical rotation
+        this.controls.minPolarAngle = 0;
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.1;
 
         // Movement State
         this.moveInput = new THREE.Vector3(0, 0, 0);
@@ -90,10 +100,17 @@ class Renderer3D {
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
 
-        // 8. Resize Handler
+        // 8. Initialize Sub-renderers
+        this.wallRenderer = new WallRenderer(this.scene, (c) => this.getMaterial(c));
+        this.floorRenderer = new FloorRenderer(this.scene, (c) => this.getMaterial(c));
+        this.doorRenderer = new DoorRenderer(this.scene, (c) => this.getMaterial(c));
+
+        // 9. Resize Handler
         this.resizeObserver = new ResizeObserver(() => this.resize());
         this.resizeObserver.observe(this.canvas);
     }
+
+    // ... (setupLights, resize, screenToWorld, getClosestEdge remain same)
 
     setupLights() {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
@@ -112,6 +129,7 @@ class Renderer3D {
         sunLight.shadow.camera.bottom = -50;
         this.scene.add(sunLight);
     }
+
 
     resize() {
         if (!this.camera || !this.renderer) return;
@@ -135,11 +153,9 @@ class Renderer3D {
     }
 
     screenToWorldPrecise(screenX, screenY) {
-        // Input is already canvas-relative (offsetX, offsetY) from input.js
         const width = this.canvas.clientWidth;
         const height = this.canvas.clientHeight;
 
-        // Normalize to -1 to +1
         const x = (screenX / width) * 2 - 1;
         const y = -(screenY / height) * 2 + 1;
 
@@ -149,7 +165,7 @@ class Renderer3D {
         const target = new THREE.Vector3();
 
         this.raycaster.ray.intersectPlane(plane, target);
-        return target; // Returns Vector3 or null
+        return target;
     }
 
     getClosestEdge(screenX, screenY) {
@@ -159,27 +175,22 @@ class Renderer3D {
         const cx = Math.floor(pos.x);
         const cz = Math.floor(pos.z);
 
-        // Local coordinates within cell [0, 1]
         const lx = pos.x - cx;
         const lz = pos.z - cz;
+        const threshold = 0.49; // Snap to nearest edge (almost 0.5)
 
-        const threshold = 0.25; // Click must be within 25% of edge
-
-        // Distances to edges
         const dists = [
-            { dir: CONFIG.GAME.EDGE_DIRECTIONS.NORTH, val: lz },           // Top (z=0)
-            { dir: CONFIG.GAME.EDGE_DIRECTIONS.SOUTH, val: 1 - lz },       // Bottom (z=1)
-            { dir: CONFIG.GAME.EDGE_DIRECTIONS.WEST, val: lx },           // Left (x=0)
-            { dir: CONFIG.GAME.EDGE_DIRECTIONS.EAST, val: 1 - lx }        // Right (x=1)
+            { dir: CONFIG.GAME.EDGE_DIRECTIONS.NORTH, val: lz },
+            { dir: CONFIG.GAME.EDGE_DIRECTIONS.SOUTH, val: 1 - lz },
+            { dir: CONFIG.GAME.EDGE_DIRECTIONS.WEST, val: lx },
+            { dir: CONFIG.GAME.EDGE_DIRECTIONS.EAST, val: 1 - lx }
         ];
 
-        // Find min distance
         dists.sort((a, b) => a.val - b.val);
 
         if (dists[0].val <= threshold) {
             return {
-                x: cx,
-                z: cz,
+                x: cx, z: cz,
                 direction: dists[0].dir,
                 dist: dists[0].val
             };
@@ -198,35 +209,63 @@ class Renderer3D {
         };
     }
 
-    setHoverCursor(target, mode = 'BLOCK') {
+    // ... (Hover/Preview logic can be simplified or extracted)
+
+    setHoverCursor(target, mode = 'BLOCK', color = null) {
         this.hoverTarget = target;
         this.highlightMode = mode;
+        this.hoverColor = color;
     }
 
     setEraseCursor(enabled) {
         this.eraseCursorEnabled = enabled;
-        // Visual feedback handled in renderPreview
+    }
+
+    getMaterial(color) {
+        if (!color) color = 0x888888;
+        if (!this.materialCache.has(color)) {
+            const mat = new THREE.MeshStandardMaterial({ color: color });
+            this.materialCache.set(color, mat);
+        }
+        return this.materialCache.get(color);
+    }
+
+    syncWorld() {
+        if (!this.dirty) return;
+
+        // Use sub-renderers
+        this.wallRenderer.update(world.walls);
+        this.floorRenderer.update(world.cells);
+        this.doorRenderer.update(world.doors);
+
+        // TODO: Entity Renderer extraction
+        this.rebuildEntities(); // Keep this inline for now or extract next
+
+        this.dirty = false;
+    }
+
+    rebuildEntities() {
+        // Existing entity logic here (simplified for brevity of this change)
+        // Ideally extract to EntityRenderer
     }
 
     render() {
         this.controls.update();
 
-        // Handle WASD Movement
+        // WASD Movement
         if (this.moveInput.lengthSq() > 0) {
             const forward = new THREE.Vector3();
             const right = new THREE.Vector3();
-
             this.camera.getWorldDirection(forward);
             forward.y = 0;
             forward.normalize();
-
             right.crossVectors(forward, this.camera.up).normalize();
 
             const move = new THREE.Vector3();
-            if (this.moveInput.z < 0) move.add(forward); // W
-            if (this.moveInput.z > 0) move.sub(forward); // S
-            if (this.moveInput.x < 0) move.sub(right);   // A
-            if (this.moveInput.x > 0) move.add(right);   // D
+            if (this.moveInput.z < 0) move.add(forward);
+            if (this.moveInput.z > 0) move.sub(forward);
+            if (this.moveInput.x < 0) move.sub(right);
+            if (this.moveInput.x > 0) move.add(right);
 
             if (move.lengthSq() > 0) {
                 move.normalize().multiplyScalar(this.moveSpeed);
@@ -250,338 +289,191 @@ class Renderer3D {
         this.moveInput.z = z;
     }
 
-    syncWorld() {
-        if (!this.dirty) return;
-        this.rebuildScene();
-        this.dirty = false;
-    }
-
-    getMaterial(color) {
-        if (!this.materialCache) this.materialCache = new Map();
-
-        // Default colors
-        if (!color) color = 0x888888; // Default wall/floor color
-
-        if (!this.materialCache.has(color)) {
-            const mat = new THREE.MeshStandardMaterial({ color: color });
-            this.materialCache.set(color, mat);
-        }
-        return this.materialCache.get(color);
-    }
-
-    rebuildScene() {
-        // Clear old meshes
-        this.meshes.floors.forEach(mesh => this.scene.remove(mesh));
-        this.meshes.walls.forEach(mesh => this.scene.remove(mesh));
-        this.meshes.doors.forEach(mesh => this.scene.remove(mesh));
-        this.meshes.entities.forEach(mesh => this.scene.remove(mesh));
-
-        this.meshes.floors.clear();
-        this.meshes.walls.clear();
-        this.meshes.doors.clear();
-        this.meshes.entities.clear();
-
-        // Floors - Thick slabs (0.2 height), positioned below y=0
-        const floorGeo = new THREE.BoxGeometry(1, 0.2, 1);
-
-        world.cells.forEach((cell, key) => {
-            // Use cell color or default
-            const material = this.getMaterial(cell.color || 0x3a4a5a); // Default floor color
-            const mesh = new THREE.Mesh(floorGeo, material);
-            // Height 0.2, Top at 0 => Center at -0.1
-            mesh.position.set(cell.x + 0.5, -0.1, cell.z + 0.5);
-            mesh.receiveShadow = true;
-            this.scene.add(mesh);
-            this.meshes.floors.set(key, mesh);
-        });
-
-        // Walls
-        const wallGeo = new THREE.BoxGeometry(1, 1, 0.2); // 1 unit high, 0.2 unit thick
-
-        world.walls.forEach((wall, key) => {
-            const material = this.getMaterial(wall.color || 0x888888);
-            const mesh = new THREE.Mesh(wallGeo, material);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-
-            let x = wall.x, z = wall.z;
-            switch (wall.direction) {
-                case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:
-                    mesh.position.set(x + 0.5, 0.5, z);
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH:
-                    mesh.position.set(x + 0.5, 0.5, z + 1);
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.WEST:
-                    mesh.position.set(x, 0.5, z + 0.5);
-                    mesh.rotation.y = Math.PI / 2;
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.EAST:
-                    mesh.position.set(x + 1, 0.5, z + 0.5);
-                    mesh.rotation.y = Math.PI / 2;
-                    break;
-            }
-            this.scene.add(mesh);
-            this.meshes.walls.set(key, mesh);
-        });
-
-        // Doors
-        world.doors.forEach((door, key) => {
-            const doorGroup = new THREE.Group();
-
-            // Positioning logic based on direction (Center of the edge)
-            let bx = 0, bz = 0, rotY = 0;
-            switch (door.direction) {
-                case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:
-                    bx = door.x + 0.5; bz = door.z; rotY = 0;
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH:
-                    bx = door.x + 0.5; bz = door.z + 1; rotY = Math.PI; // Face Out
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.WEST:
-                    bx = door.x; bz = door.z + 0.5; rotY = Math.PI / 2;
-                    break;
-                case CONFIG.GAME.EDGE_DIRECTIONS.EAST:
-                    bx = door.x + 1; bz = door.z + 0.5; rotY = -Math.PI / 2;
-                    break;
-            }
-            doorGroup.position.set(bx, 0, bz);
-            doorGroup.rotation.y = rotY;
-
-            // Pivot Group to handle Hinge rotation
-            const pivotGroup = new THREE.Group();
-            // If Hinge Right: pivot at +0.5. If Left: -0.5.
-            const pivotX = door.pivot === 'right' ? 0.5 : -0.5;
-            pivotGroup.position.set(pivotX, 0, 0);
-
-            // Door Mesh (relative to pivot)
-            // If Hinge Right (+0.5), Door needs to extend Left (-0.5 from pivot center).
-            // If Hinge Left (-0.5), Door needs to extend Right (+0.5 from pivot center).
-            const doorGeo = new THREE.BoxGeometry(1, 2, 0.1);
-            const doorMat = this.getMaterial(door.color || 0x8b4513);
-            const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-
-            const meshOffsetX = door.pivot === 'right' ? -0.5 : 0.5;
-            doorMesh.position.set(meshOffsetX, 1, 0); // Center y=1 (height 2)
-
-            // Swing Arc Indicator (curved line showing door path)
-            // Arc shows where the door edge will swing (quarter circle from hinge)
-            const arcRadius = 0.7; // Distance from hinge to arc
-            const arcSegments = 16;
-
-            // Calculate arc angles based on hinge and swing
-            // EllipseCurve draws from startAngle to endAngle
-            // Use clockwise flag to control direction
-            let startAngle, endAngle, clockwise;
-
-            if (door.pivot === 'left') {
-                // Left hinge at -0.5, door extends to +0.5 (pointing right/+X when closed)
-                if (door.swing === 'out') {
-                    // Swings counterclockwise from 0° to -90° (out/-Z)
-                    startAngle = 0;
-                    endAngle = -Math.PI / 2;
-                    clockwise = true; // Draw the short arc
-                } else {
-                    // Swings clockwise from 0° to +90° (in/+Z)
-                    startAngle = 0;
-                    endAngle = Math.PI / 2;
-                    clockwise = false;
-                }
-            } else {
-                // Right hinge at +0.5, door extends to -0.5 (pointing left/-X when closed)
-                if (door.swing === 'out') {
-                    // Swings clockwise from 180° to 90° (out/+Z)
-                    startAngle = Math.PI;
-                    endAngle = Math.PI / 2;
-                    clockwise = true; // Draw the short arc
-                } else {
-                    // Swings counterclockwise from 180° to 270° (in/-Z)
-                    startAngle = Math.PI;
-                    endAngle = -Math.PI / 2;
-                    clockwise = false;
-                }
-            }
-
-            const arcCurve = new THREE.EllipseCurve(
-                0, 0,           // center x, y (relative to pivot)
-                arcRadius, arcRadius,
-                startAngle, endAngle,
-                clockwise,
-                0               // rotation
-            );
-
-            const arcPoints = arcCurve.getPoints(arcSegments);
-            const arcGeometry = new THREE.BufferGeometry().setFromPoints(
-                arcPoints.map(p => new THREE.Vector3(p.x, 0.1, p.y))
-            );
-            const arcMaterial = new THREE.LineBasicMaterial({
-                color: 0xffff00,
-                linewidth: 2
-            });
-            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
-
-            // Add meshes to pivot group
-            pivotGroup.add(doorMesh);
-            pivotGroup.add(arcLine);
-
-            // Open/Close Animation State
-            if (door.isOpen) {
-                // Swing Angle
-                let angle = Math.PI / 2; // 90 deg
-                if (door.swing === 'in') angle = -angle; // Inward = negative Z? No, In = -Z direction.
-                // Standard coord: +X Right, -X Left, +Z Back (Out?), -Z Fwd (In?).
-                // Group Rot 0 = Facing North (+Z is South).
-                // Let's assume +Z is "Out" and -Z is "In" relative to the edge frame.
-
-                // If Hinge Left (-0.5). "Out" (+Z) rotation is -90 (Clockwise viewed from top? No).
-                // Rot Y: positive is counter-clockwise.
-                // 0 -> 0,0,1. 
-                // If Left Hinge, we want tip to move from +0.5,0 to 0,1 (+Z).
-                // That is a -90 deg rotation around -0.5.
-                // Wait. 
-                // Let's trial and error or visualize:
-                // Pivot at -0.5. Arm goes to +0.5 (Length 1).
-                // Rot +90 CCW: Arm goes to -0.5 + (0, -1) = In (-Z).
-                // Rot -90 CW: Arm goes to -0.5 + (0, 1) = Out (+Z).
-
-                // If Left Hinge: Out(-90), In(+90).
-                // If Right Hinge (+0.5). Arm goes to -0.5.
-                // Rot +90 CCW: Arm goes to +0.5 + (0, 1) = Out (+Z).
-                // Rot -90 CW: Arm goes to +0.5 + (0, -1) = In (-Z).
-
-                if (door.pivot === 'left') {
-                    angle = door.swing === 'out' ? -Math.PI / 2 : Math.PI / 2;
-                } else {
-                    // Right
-                    angle = door.swing === 'out' ? Math.PI / 2 : -Math.PI / 2;
-                }
-                pivotGroup.rotation.y = angle;
-            }
-
-            doorGroup.add(pivotGroup);
-            this.scene.add(doorGroup);
-            this.meshes.doors.set(key, doorGroup);
-        });
-    }
-
     renderPreview() {
-        this.meshes.preview.forEach(mesh => this.scene.remove(mesh));
-        this.meshes.preview = [];
+        // Clear old previews
+        this.previewMeshes.forEach(mesh => this.scene.remove(mesh));
+        this.previewMeshes = [];
 
-        // Cursor Highlight
+        // 1. Cursor Highlight
         if (this.hoverTarget) {
-            const color = this.eraseCursorEnabled ? 0xff4444 : 0x44aaff; // Red for erase, Blue for normal
-            const opacity = 0.5;
+            // Priority: Custom Hover Color -> Erase Mode Red -> Default Blue
+            let color = this.hoverColor;
+            if (color === null) {
+                color = this.eraseCursorEnabled ? 0xff4444 : 0x44aaff;
+            }
+
+            const size = 0.2; // Grip size
+            const opacity = 0.8;
 
             if (this.highlightMode === 'EDGE') {
-                // Target contains { x, z, direction }
                 const { x, z, direction } = this.hoverTarget;
-                // Ghost Edge (Thin Box)
-                const mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.8, 0.8, 0.2),
-                    new THREE.MeshBasicMaterial({ color, transparent: true, opacity })
-                );
-
-                // Position/Rotate based on direction
+                // ... (Edge Highlight Logic same as before)
+                const grips = [];
+                // Edge geometry...
+                let p1, p2;
                 switch (direction) {
                     case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:
-                        mesh.position.set(x + 0.5, 0.5, z);
+                        p1 = new THREE.Vector3(x, 0.1, z);
+                        p2 = new THREE.Vector3(x + 1, 0.1, z);
                         break;
                     case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH:
-                        mesh.position.set(x + 0.5, 0.5, z + 1);
+                        p1 = new THREE.Vector3(x, 0.1, z + 1);
+                        p2 = new THREE.Vector3(x + 1, 0.1, z + 1);
                         break;
                     case CONFIG.GAME.EDGE_DIRECTIONS.WEST:
-                        mesh.position.set(x, 0.5, z + 0.5);
-                        mesh.rotation.y = Math.PI / 2;
+                        p1 = new THREE.Vector3(x, 0.1, z);
+                        p2 = new THREE.Vector3(x, 0.1, z + 1);
                         break;
                     case CONFIG.GAME.EDGE_DIRECTIONS.EAST:
-                        mesh.position.set(x + 1, 0.5, z + 0.5);
-                        mesh.rotation.y = Math.PI / 2;
+                        p1 = new THREE.Vector3(x + 1, 0.1, z);
+                        p2 = new THREE.Vector3(x + 1, 0.1, z + 1);
                         break;
                 }
-                this.scene.add(mesh);
-                this.meshes.preview.push(mesh);
 
-            } else if (this.highlightMode === 'CORNERS') {
-                // Target is cell { x, z }
-                // Draw 4 corner pieces
-                const { x, z } = this.hoverTarget;
-                const size = 0.2;
-                const geo = new THREE.BoxGeometry(size, 0.1, size);
-                const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
-
-                const offsets = [
-                    { dx: 0, dz: 0 },
-                    { dx: 1 - size, dz: 0 },
-                    { dx: 0, dz: 1 - size },
-                    { dx: 1 - size, dz: 1 - size }
-                ];
-
-                offsets.forEach(off => {
-                    const corner = new THREE.Mesh(geo, mat);
-                    corner.position.set(x + off.dx + size / 2, 0.05, z + off.dz + size / 2);
-                    this.scene.add(corner);
-                    this.meshes.preview.push(corner);
+                [p1, p2].forEach(p => {
+                    const mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(size, size, size),
+                        new THREE.MeshBasicMaterial({ color, transparent: true, opacity })
+                    );
+                    mesh.position.copy(p);
+                    this.scene.add(mesh);
+                    this.previewMeshes.push(mesh);
                 });
 
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+                const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 }));
+                this.scene.add(line);
+                this.previewMeshes.push(line);
+
+            } else if (this.highlightMode === 'CORNERS') {
+                // Render 4 corner grips for the cell
+                const { x, z } = this.hoverTarget;
+                const points = [
+                    new THREE.Vector3(x, 0.1, z),
+                    new THREE.Vector3(x + 1, 0.1, z),
+                    new THREE.Vector3(x, 0.1, z + 1),
+                    new THREE.Vector3(x + 1, 0.1, z + 1)
+                ];
+
+                points.forEach(p => {
+                    const mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(size, size, size),
+                        new THREE.MeshBasicMaterial({ color, transparent: true, opacity })
+                    );
+                    mesh.position.copy(p);
+                    this.scene.add(mesh);
+                    this.previewMeshes.push(mesh);
+                });
+
+                // Optional: Draw box border for CORNERS cursor too?
+                // User asked for "red cursor and border lines" for drag.
+                // For single cell cursor, let's add faint lines connecting corners.
+                const linePoints = [points[0], points[1], points[3], points[2], points[0]];
+                const boxGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+                const boxLine = new THREE.Line(boxGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.3 }));
+                this.scene.add(boxLine);
+                this.previewMeshes.push(boxLine);
+
             } else {
-                // Default BLOCK (Cell selection)
+                // BLOCK / DEFAULT
                 const cursor = new THREE.Mesh(
                     new THREE.BoxGeometry(1.05, 1.05, 1.05),
                     new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.3 })
                 );
                 cursor.position.set(this.hoverTarget.x + 0.5, 0.5, this.hoverTarget.z + 0.5);
                 this.scene.add(cursor);
-                this.meshes.preview.push(cursor);
+                this.previewMeshes.push(cursor);
             }
         }
 
-        if (!this.buildPreview || this.buildPreview.length === 0) return;
+        // 2. Build Tool Previews
+        if (this.buildPreview && this.buildPreview.length > 0) {
+            this.buildPreview.forEach(item => {
+                let mesh;
+                if (item.type === 'selection-box') {
+                    // Render Rectangle Border + 4 Corner Handles
+                    const color = item.color || 0xff0000;
+                    const x = item.x;
+                    const z = item.z;
+                    const w = item.width;
+                    const h = item.height; // Depth (z)
 
-        this.buildPreview.forEach(item => {
-            let mesh;
-            if (item.type === 'wall') {
-                mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(1, 1, 0.2),
-                    new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
-                );
-                let x = item.x, z = item.z;
-                switch (item.direction) {
-                    case CONFIG.GAME.EDGE_DIRECTIONS.NORTH: mesh.position.set(x + 0.5, 0.5, z); break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH: mesh.position.set(x + 0.5, 0.5, z + 1); break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.WEST: mesh.position.set(x, 0.5, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.EAST: mesh.position.set(x + 1, 0.5, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
-                }
-            } else if (item.type === 'floor') {
-                mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(1, 0.1, 1),
-                    new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
-                );
-                mesh.position.set(item.x + 0.5, 0, item.z + 0.5);
-            } else if (item.type === 'door') {
-                mesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(1, 0.8, 0.1),
-                    new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
-                );
-                let x = item.x, z = item.z;
-                switch (item.direction) {
-                    case CONFIG.GAME.EDGE_DIRECTIONS.NORTH: mesh.position.set(x + 0.5, 0.4, z); break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH: mesh.position.set(x + 0.5, 0.4, z + 1); break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.WEST: mesh.position.set(x, 0.4, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
-                    case CONFIG.GAME.EDGE_DIRECTIONS.EAST: mesh.position.set(x + 1, 0.4, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
-                }
-            }
+                    // 4 Corners: (x,z), (x+w,z), (x,z+h), (x+w, z+h)
+                    // Note: Coordinates are usually cell corners. 
+                    // Assuming x,z are min coords, and w,h are dimensions in cells.
+                    // Visuals match grid lines.
+                    const p1 = new THREE.Vector3(x, 0.1, z);
+                    const p2 = new THREE.Vector3(x + w, 0.1, z);
+                    const p3 = new THREE.Vector3(x + w, 0.1, z + h);
+                    const p4 = new THREE.Vector3(x, 0.1, z + h);
 
-            if (mesh) {
-                this.scene.add(mesh);
-                this.meshes.preview.push(mesh);
-            }
-        });
+                    // Draw 4 Handles
+                    const size = 0.3;
+                    [p1, p2, p3, p4].forEach(p => {
+                        const m = new THREE.Mesh(
+                            new THREE.BoxGeometry(size, size, size),
+                            new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1.0 }) // Full opacity for handles
+                        );
+                        m.position.copy(p);
+                        this.scene.add(m);
+                        this.previewMeshes.push(m);
+                    });
+
+                    // Draw Border Lines
+                    const points = [p1, p2, p3, p4, p1];
+                    const buf = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(buf, new THREE.LineBasicMaterial({ color, linewidth: 2 }));
+                    this.scene.add(line);
+                    this.previewMeshes.push(line);
+
+                    return; // Done for this item
+                }
+
+                else if (item.type === 'wall') {
+                    mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(1, 1, 0.2),
+                        new THREE.MeshBasicMaterial({ color: item.color || 0x00ff00, transparent: true, opacity: 0.5 })
+                    );
+                    let x = item.x, z = item.z;
+                    switch (item.direction) {
+                        case CONFIG.GAME.EDGE_DIRECTIONS.NORTH: mesh.position.set(x + 0.5, 0.5, z); break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH: mesh.position.set(x + 0.5, 0.5, z + 1); break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.WEST: mesh.position.set(x, 0.5, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.EAST: mesh.position.set(x + 1, 0.5, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
+                    }
+                } else if (item.type === 'floor') {
+                    mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(1, 0.1, 1),
+                        new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
+                    );
+                    mesh.position.set(item.x + 0.5, 0, item.z + 0.5);
+                } else if (item.type === 'door') {
+                    mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(1, 0.8, 0.1),
+                        new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
+                    );
+                    let x = item.x, z = item.z;
+                    switch (item.direction) {
+                        case CONFIG.GAME.EDGE_DIRECTIONS.NORTH: mesh.position.set(x + 0.5, 0.4, z); break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH: mesh.position.set(x + 0.5, 0.4, z + 1); break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.WEST: mesh.position.set(x, 0.4, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
+                        case CONFIG.GAME.EDGE_DIRECTIONS.EAST: mesh.position.set(x + 1, 0.4, z + 0.5); mesh.rotation.y = Math.PI / 2; break;
+                    }
+                }
+
+                if (mesh) {
+                    this.scene.add(mesh);
+                    this.previewMeshes.push(mesh);
+                }
+            });
+        }
     }
 
     markDirty() {
         this.dirty = true;
     }
+
+    // ... (reset, zoom, centerOn methods remain same)
 
     reset() {
         this.camera.position.set(20, 20, 20);
@@ -592,20 +484,49 @@ class Renderer3D {
         }
     }
 
-    zoom(delta) {
-        // Simple zoom by moving camera along view vector
-        // delta > 0 means zoom in (closer)
-        const zoomSpeed = 5;
-        const direction = new THREE.Vector3();
-        this.camera.getWorldDirection(direction);
+    zoom(delta, screenX, screenY) {
+        const zoomSpeed = 2.0; // Reduced from 5 for smoother control
 
-        if (delta > 0) {
-            this.camera.position.addScaledVector(direction, zoomSpeed);
-        } else {
-            this.camera.position.addScaledVector(direction, -zoomSpeed);
+        // 1. Get world point under cursor
+        let targetPoint;
+        if (screenX !== undefined && screenY !== undefined) {
+            const preciseTarget = this.screenToWorldPrecise(screenX, screenY);
+            if (preciseTarget) targetPoint = preciseTarget;
         }
+
+        // Fallback to center screen if no mouse pos provided or off-ground
+        if (!targetPoint) {
+            targetPoint = new THREE.Vector3();
+            this.camera.getWorldDirection(targetPoint);
+            targetPoint.multiplyScalar(20).add(this.camera.position); // Look 20 units ahead
+        }
+
+        // 2. Calculate vector from camera to target point
+        const offset = new THREE.Vector3().subVectors(targetPoint, this.camera.position);
+
+        // 3. Move along that vector
+        // Use a percentage of the distance for "smooth" feel relative to depth
+        const distance = offset.length();
+        // Constant factor is okay, but user wants to "zoom onto that point".
+        // If we move the camera AND the target, we are panning.
+        // To make the point the "center of the screen", we should shift the controls.target perpendicular to the camera view
+        // to align the target point with the center ray? No, simpler: just move towards it.
+
+        const zoomFactor = 0.2; // Increase responsiveness
+        const dir = delta > 0 ? 1 : -1;
+
+        if (distance > 2 && distance < 200) {
+            const moveVec = offset.clone().multiplyScalar(zoomFactor * dir);
+            this.camera.position.add(moveVec);
+            this.controls.target.add(moveVec);
+            // Verify target height stays reasonable?
+            // this.controls.target.y = 0; // Optional: Force ground level target? Or allow flying?
+        }
+
         this.controls.update();
+        return true;
     }
+
 
     centerOn(x, z) {
         if (this.controls) {

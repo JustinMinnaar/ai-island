@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Island - Automated Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #111;
+            color: #eee;
+            padding: 20px;
+        }
+
+        .test-pass {
+            color: #4f4;
+        }
+
+        .test-fail {
+            color: #f44;
+        }
+
+        .summary {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #canvas-mock {
+            display: none;
+        }
+
+        /* Hidden canvas for WebGL context creation */
+    </style>
+    <!-- Import Map to resolve modules same as main app -->
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>🤖 Automated Test Suite</h1>
+    <button onclick="runTests()">▶ Run Tests</button>
+    <div id="results"></div>
+    <canvas id="canvas-mock" width="800" height="600"></canvas>
+
+    <script type="module" src="./test-runner.js"></script>
+    <script>
+        // Global hook to trigger tests from module
+        window.runTests = () => {
+            document.getElementById('results').innerHTML = 'Running...';
+            window.testRunner.runAll();
+        };
+    </script>
+</body>
+
+</html>

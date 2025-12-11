@@ -75,6 +75,17 @@ class World {
         return Array.from(this.walls.values());
     }
 
+    getWallsAt(x, y, z) {
+        const walls = [];
+        const directions = [CONFIG.GAME.EDGE_DIRECTIONS.NORTH, CONFIG.GAME.EDGE_DIRECTIONS.SOUTH, CONFIG.GAME.EDGE_DIRECTIONS.EAST, CONFIG.GAME.EDGE_DIRECTIONS.WEST];
+
+        for (const dir of directions) {
+            const wall = this.getWall(x, y, z, dir);
+            if (wall) walls.push(wall);
+        }
+        return walls;
+    }
+
     // ===== Door Methods (Edge-Based) =====
 
     getDoorKey(x, y, z, direction) {
