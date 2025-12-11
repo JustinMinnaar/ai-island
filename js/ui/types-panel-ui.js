@@ -190,48 +190,60 @@ class TypesPanelUI {
     }
 
     saveType(typeId, category, modal) {
-        const name = document.getElementById('type-name').value;
-        const description = document.getElementById('type-description').value;
+        try {
+            console.log(`💾 Saving type: ID=${typeId}, Category=${category}`);
 
-        if (!name) {
-            alert('Name is required');
-            return;
-        }
+            const name = document.getElementById('type-name').value;
+            const description = document.getElementById('type-description').value;
 
-        const properties = { name, description };
-
-        if (category === 'item') {
-            properties.gridWidth = parseInt(document.getElementById('type-grid-width').value);
-            properties.gridHeight = parseInt(document.getElementById('type-grid-height').value);
-            properties.maxStack = parseInt(document.getElementById('type-max-stack').value);
-            properties.imageURL = document.getElementById('type-image-url').value || null;
-        } else if (category === 'creature' || category === 'character') {
-            const skillsText = document.getElementById('type-skills').value;
-            properties.skills = skillsText.split('\n')
-                .filter(line => line.trim())
-                .map(line => {
-                    const [name, value] = line.split(':');
-                    return { name: name.trim(), value: parseInt(value) || 0 };
-                });
-
-            if (category === 'creature') {
-                properties.defaultHP = parseInt(document.getElementById('type-default-hp').value);
-            } else {
-                properties.race = document.getElementById('type-race').value;
-                properties.class = document.getElementById('type-class').value;
+            if (!name) {
+                alert('Name is required');
+                return;
             }
-        }
 
-        if (typeId) {
-            // Update existing
-            typeRegistry.updateType(typeId, properties);
-        } else {
-            // Create new
-            typeRegistry.createType(category, properties);
-        }
+            const properties = { name, description };
 
-        modal.remove();
-        this.render();
+            if (category === 'item') {
+                properties.gridWidth = parseInt(document.getElementById('type-grid-width').value) || 1;
+                properties.gridHeight = parseInt(document.getElementById('type-grid-height').value) || 1;
+                properties.maxStack = parseInt(document.getElementById('type-max-stack').value) || 1;
+                properties.imageURL = document.getElementById('type-image-url').value || null;
+            } else if (category === 'creature' || category === 'character') {
+                const skillsText = document.getElementById('type-skills').value;
+                properties.skills = skillsText.split('\n')
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const [name, value] = line.split(':');
+                        return { name: name.trim(), value: parseInt(value) || 0 };
+                    });
+
+                if (category === 'creature') {
+                    properties.defaultHP = parseInt(document.getElementById('type-default-hp').value) || 10;
+                } else {
+                    properties.race = document.getElementById('type-race').value;
+                    properties.class = document.getElementById('type-class').value;
+                }
+            }
+
+            if (typeId) {
+                // Update existing
+                console.log('🔄 Updating existing type...');
+                typeRegistry.updateType(typeId, properties);
+            } else {
+                // Create new
+                console.log('✨ Creating new type...');
+                const newId = typeRegistry.createType(category, properties);
+                console.log(`✅ Created type with ID: ${newId}`);
+            }
+
+            if (modal) modal.remove();
+            this.render();
+            console.log('🎨 Panel re-rendered');
+
+        } catch (error) {
+            console.error('❌ Error saving type:', error);
+            alert('Error saving type: ' + error.message);
+        }
     }
 
     deleteType(typeId) {

@@ -13,6 +13,9 @@ import { panelController } from './panel-controller.js';
 import { typeRegistry } from './type-registry.js';
 import { assetManager } from './managers/asset-manager.js';
 import { loadStarterTypes } from './data/starter-types.js';
+import { typesPanelUI } from './ui/types-panel-ui.js';
+import { characterPanelUI } from './ui/character-panel-ui.js';
+import { inventoryPanelUI } from './ui/inventory-panel-ui.js';
 
 // Initialize application
 async function init() {
@@ -63,11 +66,53 @@ async function init() {
     loadStarterTypes(typeRegistry);
     console.log('✅ Type system initialized');
 
+    // Initialize UI Panels
+    typesPanelUI.init();
+    characterPanelUI.init();
+    inventoryPanelUI.init();
+    console.log('✅ UI Panels initialized');
+
     // Initialize and start game
     await game.init();
     game.start();
 
+    // Setup RPG panel toggle buttons
+    setupPanelButtons();
+
     console.log('🎉 AI Island is ready!');
+}
+
+function setupPanelButtons() {
+    const typesBtn = document.getElementById('types-btn');
+    const charactersBtn = document.getElementById('characters-btn');
+    const inventoryBtn = document.getElementById('inventory-btn');
+
+    if (typesBtn) {
+        typesBtn.addEventListener('click', () => {
+            typesPanelUI.toggle();
+            typesBtn.classList.toggle('active');
+        });
+    }
+
+    if (charactersBtn) {
+        charactersBtn.addEventListener('click', () => {
+            characterPanelUI.toggle();
+            charactersBtn.classList.toggle('active');
+        });
+    }
+
+    if (inventoryBtn) {
+        inventoryBtn.addEventListener('click', () => {
+            // Show inventory for selected character
+            const selectedChar = characterPanelUI.selectedCharacter;
+            if (selectedChar) {
+                inventoryPanelUI.show(selectedChar);
+                inventoryBtn.classList.toggle('active');
+            } else {
+                alert('Please select a character first');
+            }
+        });
+    }
 }
 
 function setupSaveLoad() {

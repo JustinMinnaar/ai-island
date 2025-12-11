@@ -1,5 +1,36 @@
 /* Panels - Side panels, modals, tabs */
 
+.side-panel {
+    position: fixed;
+    top: 50px;
+    width: 300px;
+    height: calc(100vh - 50px);
+    background: var(--color-bg-secondary);
+    border: var(--border-width) solid var(--color-border);
+    overflow-y: auto;
+    transition: transform var(--transition-base);
+    z-index: 300;
+    box-shadow: var(--shadow-xl);
+}
+
+.left-panel {
+    left: 0;
+}
+
+.right-panel {
+    right: 0;
+}
+
+/* Left panel collapses to left */
+.left-panel.collapsed {
+    transform: translateX(-100%);
+}
+
+/* Right panel collapses to right */
+.right-panel.collapsed {
+    transform: translateX(100%);
+}
+
 /* Panel Tabs */
 .panel-tabs {
     display: flex;
