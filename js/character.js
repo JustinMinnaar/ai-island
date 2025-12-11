@@ -7,6 +7,7 @@ export class Character {
         this.id = properties.id || this.generateId();
         this.typeId = properties.typeId || null; // Optional template reference
         this.name = properties.name || 'Unnamed Character';
+        this.playerName = properties.playerName || ''; // Player controlling this character
         this.description = properties.description || '';
         this.race = properties.race || 'Human';
         this.class = properties.class || 'Warrior';
@@ -63,6 +64,7 @@ export class Character {
             id: this.id,
             typeId: this.typeId,
             name: this.name,
+            playerName: this.playerName,
             description: this.description,
             race: this.race,
             class: this.class,
