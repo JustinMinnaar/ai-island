@@ -119,19 +119,23 @@ class PropertiesPanelUI {
         this.currentSelection = { type: 'tool', id: toolId };
 
         // Bind Color Picker
-        const colorInput = document.getElementById('tool-active-color');
+        paletteContainer.innerHTML = html;
+
+        // Bind Color Picker for this specific tool
+        const colorInput = paletteContainer.querySelector(`#tool-active-color-${targetToolId}`);
         if (colorInput) {
             colorInput.addEventListener('change', (e) => {
                 const color = parseInt(e.target.value.replace('#', ''), 16);
                 if (window.buildMode) {
-                    const proto = window.buildMode.toolPrototypes[toolId];
+                    const proto = window.buildMode.toolPrototypes[targetToolId];
                     if (proto) {
                         proto.color = color;
-                        this.addToPalette(color);
+                        this.addToPalette(color, targetToolId); // Pass targetToolId
                     }
                 }
             });
         }
+        return paletteContainer;
     }
 
     init() {

@@ -55,11 +55,9 @@ class InputHandler {
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
-                // For Door tool we might want edge detection
+                // For Door tool, we rely on onClick for precise edge selection
                 if (tool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
-                    // Existing specific door placement logic
-                    const edge = renderer.getClosestEdge(mouseX, mouseY);
-                    if (edge) buildMode.startDrawing(edge);
+                    return;
                 }
                 // Wall Tool with edge detection
                 else if (tool === CONFIG.GAME.BUILD_TOOLS.WALL) {

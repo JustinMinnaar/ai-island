@@ -80,6 +80,33 @@ class BuildMode {
             z-index: 1000;
         `;
 
+        // Home Button
+        const homeBtn = document.createElement('button');
+        homeBtn.className = 'tool-btn';
+        homeBtn.innerHTML = '🏠'; // Home Icon
+        homeBtn.title = 'Reset View';
+        homeBtn.style.cssText = `
+            background: none;
+            border: 1px solid #444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em; /* For icon size */
+            line-height: 1;
+        `;
+        homeBtn.onclick = () => {
+            renderer.reset();
+            // Reset zoom level variable if needed, though reset() should handle pos
+            if (renderer.zoomLevel) renderer.zoomLevel = 1.0;
+        };
+        this.toolbar.appendChild(homeBtn);
+
         const tools = [
             { id: CONFIG.GAME.BUILD_TOOLS.WALL, icon: '🧱', label: 'Wall' },
             { id: CONFIG.GAME.BUILD_TOOLS.FLOOR, icon: '⬜', label: 'Floor' },
