@@ -243,8 +243,11 @@ class InputHandler {
 
         // 2. SELECT MODE - Check for clickable objects via mesh raycasting
         if (buildMode.active && buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+            console.log('🔍 SELECT mode click detected');
+
             // Priority  1: Raycast against visual objects (walls, doors, floors, entities)
             const objectHit = renderer.getObjectAtScreen(mouseX, mouseY);
+            console.log('Raycast result:', objectHit);
             if (objectHit) {
                 const { type, x, y, z, direction } = objectHit;
 

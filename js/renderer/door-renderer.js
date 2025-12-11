@@ -56,15 +56,14 @@ export class DoorRenderer {
             const doorMat = this.getMaterial(door.color || 0x8b4513);
             const doorMesh = new THREE.Mesh(this.doorGeometry, doorMat);
 
+            // Position door mesh relative to pivot
+            // For left hinge: door extends to the right (+0.5)
+            // For right hinge: door extends to the left (-0.5)
             const meshOffsetX = door.pivot === 'right' ? -0.5 : 0.5;
             doorMesh.position.set(meshOffsetX, 1, 0); // Center y=1 (height 2)
 
-            // Swing Arc Indicator
-            const arcLine = this.createSwingArc(door);
-
-            // Add meshes to pivot group
+            // Add door mesh to pivot group (rotates with door)
             pivotGroup.add(doorMesh);
-            pivotGroup.add(arcLine);
 
             // Open/Close Animation State
             if (door.isOpen) {
@@ -78,7 +77,13 @@ export class DoorRenderer {
                 pivotGroup.rotation.y = angle;
             }
 
+            // Swing Arc Indicator - positioned at pivot origin but NOT rotating with door
+            // Add arc to doorGroup (not pivotGroup) so it stays stationary
+            const arcLine = this.createSwingArc(door);
+            arcLine.position.set(pivotX, 0, 0); // Position at same location as pivot
+
             doorGroup.add(pivotGroup);
+            doorGroup.add(arcLine); // Arc added to doorGroup, not pivotGroup
             this.scene.add(doorGroup);
             this.meshes.set(key, doorGroup);
         });
@@ -90,23 +95,31 @@ export class DoorRenderer {
         let startAngle, endAngle, clockwise;
 
         if (door.pivot === 'left') {
+            // Hinge on left side - door extends right, arc shows swing
+            // The door rotates: swing 'out' = negative angle, swing 'in' = positive angle
             if (door.swing === 'out') {
+                // Arc should show negative rotation (clockwise from 0 to -π/2)
                 startAngle = 0;
-                endAngle = -Math.PI / 2;
-                clockwise = true;
-            } else {
-                startAngle = 0;
-                endAngle = Math.PI / 2;
+                endAngle = Math.PI / 2; // Inverted: show where door goes
                 clockwise = false;
+            } else {
+                // swing in - Arc should show positive rotation
+                startAngle = 0;
+                endAngle = -Math.PI / 2; // Inverted: show where door goes
+                clockwise = true;
             }
         } else {
+            // Hinge on right side - door extends left
+            // The door rotates: swing 'out' = positive angle, swing 'in' = negative angle
             if (door.swing === 'out') {
+                // Arc should show positive rotation from π
                 startAngle = Math.PI;
-                endAngle = Math.PI / 2;
+                endAngle = Math.PI / 2; // Inverted: show where door goes
                 clockwise = true;
             } else {
+                // swing in - Arc should show negative rotation from π
                 startAngle = Math.PI;
-                endAngle = -Math.PI / 2;
+                endAngle = 3 * Math.PI / 2; // Inverted: show where door goes
                 clockwise = false;
             }
         }

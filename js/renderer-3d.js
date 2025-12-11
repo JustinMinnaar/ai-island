@@ -35,6 +35,10 @@ class Renderer3D {
         this.materialCache = new Map();
         this.zoomLevel = 1.0;
 
+        // Selection highlighting
+        this.selectedObject = null;
+        this.selectionHighlight = null;
+
         this.init();
     }
 
@@ -322,6 +326,15 @@ class Renderer3D {
             }
         }
 
+        // Clamp camera height to stay above ground
+        const minHeight = 0.5; // Minimum camera height above ground
+        if (this.camera.position.y < minHeight) {
+            this.camera.position.y = minHeight;
+        }
+        if (this.controls.target.y < 0) {
+            this.controls.target.y = 0;
+        }
+
         if (this.canvas.width !== this.canvas.clientWidth || this.canvas.height !== this.canvas.clientHeight) {
             this.resize();
         }
@@ -518,6 +531,79 @@ class Renderer3D {
     }
 
     markDirty() {
+        this.dirty = true;
+    }
+
+    // Selection highlighting methods
+    setSelectedObject(type, x, y, z, direction = null) {
+        this.clearSelection();
+
+        this.selectedObject = { type, x, y, z, direction };
+
+        // Create highlight based on type
+        const highlightMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3,
+            wireframe: false
+        });
+
+        if (type === 'door' && direction) {
+            // Highlight door
+            const highlightGeom = new THREE.BoxGeometry(1.1, 2.1, 0.15);
+            const highlight = new THREE.Mesh(highlightGeom, highlightMaterial);
+
+            let bx = 0, bz = 0;
+            switch (direction) {
+                case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:
+                    bx = x + 0.5; bz = z; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH:
+                    bx = x + 0.5; bz = z + 1; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.WEST:
+                    bx = x; bz = z + 0.5; highlight.rotation.y = Math.PI / 2; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.EAST:
+                    bx = x + 1; bz = z + 0.5; highlight.rotation.y = Math.PI / 2; break;
+            }
+            highlight.position.set(bx, 1, bz);
+            this.selectionHighlight = highlight;
+            this.scene.add(highlight);
+        } else if (type === 'wall' && direction) {
+            // Highlight wall
+            const highlightGeom = new THREE.BoxGeometry(1.1, 1.1, 0.15);
+            const highlight = new THREE.Mesh(highlightGeom, highlightMaterial);
+
+            let bx = 0, bz = 0;
+            switch (direction) {
+                case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:
+                    bx = x + 0.5; bz = z; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.SOUTH:
+                    bx = x + 0.5; bz = z + 1; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.WEST:
+                    bx = x; bz = z + 0.5; highlight.rotation.y = Math.PI / 2; break;
+                case CONFIG.GAME.EDGE_DIRECTIONS.EAST:
+                    bx = x + 1; bz = z + 0.5; highlight.rotation.y = Math.PI / 2; break;
+            }
+            highlight.position.set(bx, 0.5, bz);
+            this.selectionHighlight = highlight;
+            this.scene.add(highlight);
+        } else if (type === 'floor') {
+            // Highlight floor
+            const highlightGeom = new THREE.BoxGeometry(1.05, 0.25, 1.05);
+            const highlight = new THREE.Mesh(highlightGeom, highlightMaterial);
+            highlight.position.set(x + 0.5, -0.1, z + 0.5);
+            this.selectionHighlight = highlight;
+            this.scene.add(highlight);
+        }
+
+        this.dirty = true;
+    }
+
+    clearSelection() {
+        if (this.selectionHighlight) {
+            this.scene.remove(this.selectionHighlight);
+            this.selectionHighlight = null;
+        }
+        this.selectedObject = null;
         this.dirty = true;
     }
 

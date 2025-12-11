@@ -287,6 +287,30 @@ class PropertiesPanelUI {
 
         html += '</div>';
 
+        // Swing and Pivot Controls
+        html += '<div class="property-group">';
+        html += '<div class="property-group-title">Door Configuration</div>';
+
+        // Swing direction
+        html += `<div class="property-row">
+            <span class="property-label">Swing Direction</span>
+            <div class="button-group">
+                <button class="property-btn ${swing === 'in' ? 'active' : ''}" id="door-swing-in">In</button>
+                <button class="property-btn ${swing === 'out' ? 'active' : ''}" id="door-swing-out">Out</button>
+            </div>
+        </div>`;
+
+        // Hinge side (pivot)
+        html += `<div class="property-row">
+            <span class="property-label">Hinge Side</span>
+            <div class="button-group">
+                <button class="property-btn ${pivot === 'left' ? 'active' : ''}" id="door-pivot-left">Left</button>
+                <button class="property-btn ${pivot === 'right' ? 'active' : ''}" id="door-pivot-right">Right</button>
+            </div>
+        </div>`;
+
+        html += '</div>';
+
         // Actions
         html += '<div class="property-group">';
         html += '<div class="property-group-title">Actions</div>';
@@ -331,6 +355,58 @@ class PropertiesPanelUI {
                     // Refresh properties to update disabled state of open switch
                     this.showDoorProperties({ x, y, z, direction, data: newState });
                     console.log(`🔒 Door ${newLockedState ? 'locked' : 'unlocked'}`);
+                }
+            });
+        }
+
+        // Bind swing direction buttons
+        const swingInBtn = document.getElementById('door-swing-in');
+        const swingOutBtn = document.getElementById('door-swing-out');
+        if (swingInBtn) {
+            swingInBtn.addEventListener('click', () => {
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor) {
+                    world.setDoor(x, y, z, direction, { ...currentDoor, swing: 'in' });
+                    if (renderer) renderer.markDirty();
+                    swingInBtn.classList.add('active');
+                    swingOutBtn.classList.remove('active');
+                }
+            });
+        }
+        if (swingOutBtn) {
+            swingOutBtn.addEventListener('click', () => {
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor) {
+                    world.setDoor(x, y, z, direction, { ...currentDoor, swing: 'out' });
+                    if (renderer) renderer.markDirty();
+                    swingOutBtn.classList.add('active');
+                    swingInBtn.classList.remove('active');
+                }
+            });
+        }
+
+        // Bind hinge side buttons
+        const pivotLeftBtn = document.getElementById('door-pivot-left');
+        const pivotRightBtn = document.getElementById('door-pivot-right');
+        if (pivotLeftBtn) {
+            pivotLeftBtn.addEventListener('click', () => {
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor) {
+                    world.setDoor(x, y, z, direction, { ...currentDoor, pivot: 'left' });
+                    if (renderer) renderer.markDirty();
+                    pivotLeftBtn.classList.add('active');
+                    pivotRightBtn.classList.remove('active');
+                }
+            });
+        }
+        if (pivotRightBtn) {
+            pivotRightBtn.addEventListener('click', () => {
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor) {
+                    world.setDoor(x, y, z, direction, { ...currentDoor, pivot: 'right' });
+                    if (renderer) renderer.markDirty();
+                    pivotRightBtn.classList.add('active');
+                    pivotLeftBtn.classList.remove('active');
                 }
             });
         }
