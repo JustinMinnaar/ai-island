@@ -39,6 +39,42 @@ class InputHandler {
         this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
         this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
         this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+
+        // Drag and Drop events (for instantiating types)
+        this.canvas.addEventListener('dragover', this.onDragOver.bind(this));
+        this.canvas.addEventListener('drop', this.onDrop.bind(this));
+    }
+
+    onDragOver(e) {
+        e.preventDefault(); // Allow drop
+        e.dataTransfer.dropEffect = 'copy';
+
+        // Optional: Show visual feedback at cursor
+        // const rect = this.canvas.getBoundingClientRect();
+        // const worldPos = renderer.screenToWorld(e.clientX - rect.left, e.clientY - rect.top, 0);
+        // if (worldPos) renderer.setHoverCursor(worldPos, 'BLOCK', 0x00ff00);
+    }
+
+    onDrop(e) {
+        e.preventDefault();
+        const typeId = e.dataTransfer.getData('typeId');
+
+        if (typeId) {
+            const rect = this.canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
+
+            if (worldPos) {
+                // Instantiate at this position!
+                // We need to import typesPanelUI or dispatch an event.
+                // Since modules are circular, maybe dispatching an event or using global is safer?
+                // typesPanelUI is on window.typesPanelUI
+                if (window.typesPanelUI) {
+                    window.typesPanelUI.instantiateType(parseInt(typeId), worldPos);
+                }
+            }
+        }
     }
 
     // ... (Mouse event handlers remain unchanged) ...

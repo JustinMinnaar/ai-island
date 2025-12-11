@@ -1,4 +1,4 @@
-// Game loop and coordination
+import { turnManager, PHASES } from './turn-manager.js';
 import { CONFIG } from './config.js';
 import { world } from './world.js';
 import { renderer } from './renderer-3d.js';
@@ -12,6 +12,7 @@ class Game {
         this.frameCount = 0;
         this.lastFPSUpdate = 0;
         this.mode = CONFIG.GAME.MODES.OBSERVER;
+        this.turnManager = turnManager; // Expose
     }
 
     async init() {
@@ -23,6 +24,52 @@ class Game {
         console.log('✅ AI Island initialized successfully');
     }
 
+    // ... (loadDemoData remains same) ...
+
+    start() {
+        if (this.isRunning) return;
+
+        this.isRunning = true;
+        this.lastFrameTime = performance.now();
+        this.lastFPSUpdate = performance.now();
+        this.gameLoop();
+
+        console.log('▶️ Game loop started');
+    }
+
+    stop() {
+        this.isRunning = false;
+        console.log('⏸️ Game loop stopped');
+    }
+
+    gameLoop(currentTime = performance.now()) {
+        if (!this.isRunning) return;
+
+        // Calculate delta time
+        const deltaTime = currentTime - this.lastFrameTime;
+        this.lastFrameTime = currentTime;
+
+        // Update Turn Manager
+        this.turnManager.update(deltaTime);
+
+        // Update FPS counter
+        this.frameCount++;
+        if (currentTime - this.lastFPSUpdate >= 1000) {
+            this.fps = this.frameCount;
+            ui.updateFPS(this.fps);
+            this.frameCount = 0;
+            this.lastFPSUpdate = currentTime;
+        }
+
+        // Update camera info
+        ui.updateCameraInfo();
+
+        // Render
+        renderer.render();
+
+        // Continue loop
+        requestAnimationFrame(this.gameLoop.bind(this));
+    }
     loadDemoData() {
         console.log('📦 Loading demo data...');
 

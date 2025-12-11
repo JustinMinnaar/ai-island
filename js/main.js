@@ -82,10 +82,23 @@ async function init() {
     console.log('🎉 AI Island is ready!');
 }
 
+// Testing Imports
+import './testing/test-suite.js';
+import { testRunnerUI } from './testing/test-ui.js';
+
 function setupPanelButtons() {
+    console.log('🔘 Setting up panel buttons...');
     const typesBtn = document.getElementById('types-btn');
     const charactersBtn = document.getElementById('characters-btn');
     const inventoryBtn = document.getElementById('inventory-btn');
+    const runTestsBtn = document.getElementById('run-tests-btn');
+    console.log('Buttons found:', { typesBtn, charactersBtn, inventoryBtn, runTestsBtn });
+
+    if (runTestsBtn) {
+        runTestsBtn.addEventListener('click', () => {
+            testRunnerUI.toggle();
+        });
+    }
 
     if (typesBtn) {
         typesBtn.addEventListener('click', () => {
@@ -170,10 +183,11 @@ function setupSaveLoad() {
     buttonContainer.appendChild(loadBtn);
 
     // Insert before properties toggle button (right side)
-    const toggleProperties = topBar.querySelector('#toggle-properties');
-    if (toggleProperties) {
-        topBar.insertBefore(buttonContainer, toggleProperties);
+    const toggleProperties = document.getElementById('toggle-properties');
+    if (toggleProperties && toggleProperties.parentNode) {
+        toggleProperties.parentNode.insertBefore(buttonContainer, toggleProperties);
     } else {
+        // Fallback: append to top bar if specific insertion point fails
         topBar.appendChild(buttonContainer);
     }
 }

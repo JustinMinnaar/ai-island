@@ -1,100 +1,46 @@
 // Character data model
-import { GridInventory } from './inventory/grid-inventory.js';
-import { CONFIG } from './config.js';
+import { Creature } from './models/Creature.js';
 
-export class Character {
+export class Character extends Creature {
     constructor(properties = {}) {
-        this.id = properties.id || this.generateId();
-        this.typeId = properties.typeId || null; // Optional template reference
-        this.name = properties.name || 'Unnamed Character';
+        super(properties);
+
         this.playerName = properties.playerName || ''; // Player controlling this character
-        this.description = properties.description || '';
         this.race = properties.race || 'Human';
         this.class = properties.class || 'Warrior';
-        this.skills = properties.skills || []; // [{name: string, value: number}]
-        this.inventory = properties.inventory || new GridInventory(8, 4);
         this.notes = properties.notes || '';
-        this.position = properties.position || { x: 0, y: 0, z: 0 };
-        this.owner = properties.owner || 'gm'; // 'gm', 'player', 'ai'
-    }
 
-    generateId() {
-        return `char_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    /**
-     * Add or update skill
-     */
-    setSkill(name, value) {
-        const existing = this.skills.find(s => s.name === name);
-        if (existing) {
-            existing.value = value;
-        } else {
-            this.skills.push({ name, value });
+        // Override ID generation if needed, or stick with Item's default
+        if (!properties.id) {
+            this.id = `char_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
     }
 
-    /**
-     * Get skill value
-     */
-    getSkill(name) {
-        const skill = this.skills.find(s => s.name === name);
-        return skill ? skill.value : 0;
-    }
-
-    /**
-     * Remove skill
-     */
-    removeSkill(name) {
-        this.skills = this.skills.filter(s => s.name !== name);
-    }
-
-    /**
-     * Move character to position
-     */
     moveTo(x, y, z) {
-        this.position = { x, y, z };
+        // Alias for setPosition from Item
+        this.setPosition(x, y, z);
     }
 
-    /**
-     * Serialize to JSON
-     */
     toJSON() {
+        const json = super.toJSON();
         return {
-            id: this.id,
-            typeId: this.typeId,
-            name: this.name,
+            ...json,
             playerName: this.playerName,
-            description: this.description,
             race: this.race,
             class: this.class,
-            skills: this.skills,
-            inventory: this.inventory.toJSON(),
-            notes: this.notes,
-            position: this.position,
-            owner: this.owner
+            notes: this.notes
         };
     }
 
-    /**
-     * Deserialize from JSON
-     */
     static fromJSON(data) {
-        const char = new Character(data);
-        char.inventory = GridInventory.fromJSON(data.inventory);
-        return char;
+        return new Character(data);
     }
 
-    /**
-     * Save character to JSON string
-     */
+    // Helper static methods for saving/loading
     saveToJSON() {
         return JSON.stringify(this.toJSON(), null, 2);
     }
 
-    /**
-     * Load character from JSON string
-     */
     static loadFromJSON(jsonString) {
         const data = JSON.parse(jsonString);
         return Character.fromJSON(data);

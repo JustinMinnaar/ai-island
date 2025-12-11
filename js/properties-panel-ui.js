@@ -5,6 +5,7 @@ import { renderer } from './renderer-3d.js';
 import { renderDoorProperties, bindDoorEvents } from './ui/panels/door-properties.js';
 import { renderWallProperties, bindWallEvents } from './ui/panels/wall-properties.js';
 import { renderFloorProperties, bindFloorEvents } from './ui/panels/floor-properties.js';
+import { renderCharacterSheet, bindCharacterEvents } from './ui/sheets/character-sheet.js';
 
 class PropertiesPanelUI {
     constructor() {
@@ -16,53 +17,7 @@ class PropertiesPanelUI {
 
     // ... (init and clear remain same)
 
-    // Updated renderPaletteHTML to take a palette array
-    renderPaletteHTML(palette) {
-        if (!palette || palette.length === 0) return '<div class="palette-empty" style="padding:5px; font-size:10px; color:#666;">No history</div>';
-
-        // Debugging styles: border to see container
-        let html = '<div class="palette-row" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; padding: 5px; border-top: 1px solid #333; min-height: 30px;">';
-
-        palette.forEach(color => {
-            const hex = '#' + color.toString(16).padStart(6, '0');
-            html += `<div class="palette-swatch" 
-                          title="Color: ${hex}"
-                          style="width: 24px; height: 24px; background-color: ${hex}; border: 1px solid #888; cursor: pointer; box-shadow: 0 0 2px rgba(0,0,0,0.5);"
-                          onclick="window.propertiesPanelUI.selectPaletteColor(${color})"></div>`;
-        });
-        html += '</div>';
-        return html;
-    }
-
-    addToPalette(color) {
-        if (window.buildMode) {
-            const proto = window.buildMode.getActivePrototype();
-            if (proto) {
-                if (!proto.palette) proto.palette = [];
-                // standard LRU
-                if (!proto.palette.includes(color)) {
-                    proto.palette.unshift(color);
-                    if (proto.palette.length > 10) proto.palette.pop();
-
-                    // Refresh UI if needed
-                    if (this.currentSelection && this.currentSelection.type === 'tool') {
-                        this.showToolProperties(this.currentSelection.id);
-                    }
-                }
-            }
-        }
-    }
-
-    selectPaletteColor(color) {
-        if (window.buildMode) {
-            const proto = window.buildMode.getActivePrototype();
-            if (proto) {
-                proto.color = color;
-                const input = document.getElementById('tool-active-color');
-                if (input) input.value = '#' + color.toString(16).padStart(6, '0');
-            }
-        }
-    }
+    // ... (init and clear remain same)
 
     showToolProperties(toolId) {
         if (!this.container) return;
@@ -97,23 +52,24 @@ class PropertiesPanelUI {
 
             const hexColor = '#' + colorVal.toString(16).padStart(6, '0');
 
-            // Active Color Picker
-            html += `<div class="property-row">
-                <span class="property-label">Color</span>
-                <div style="flex: 1;">
-                    <input type="color" id="tool-active-color" class="property-input" value="${hexColor}" style="width: 100%;">
-                    <div id="palette-container" style="margin-top: 8px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 4px; min-height: 40px; border: 1px solid #444;">
-                        ${this.renderPaletteHTML(palette)}
-                    </div>
-                </div>
-            </div>`;
-
             // Tool Specifics
-            if (toolId === 'wall' || toolId === 'room') {
-                html += `<div class="info-box">Click and drag to place ${toolId}s.</div>`;
+            if (toolId === 'wall') {
+                html += this.renderWallToolProperties();
+            } else if (toolId === 'floor') {
+                html += this.renderFloorToolProperties();
+            } else if (toolId === 'room') {
+                html += `<div class="info-box">Click and drag to create a room with walls and floor.</div>`;
+
+                // Reuse components
+                html += this.renderWallToolProperties();
+                html += this.renderFloorToolProperties();
+
             } else if (toolId === 'door') {
                 html += `<div class="info-box">Click existing wall to place door. Click door to cycle pivot.</div>`;
-                // Add Door Orientation toggle? (For future)
+                html += this.renderColorPicker('Door Color', 'door', hexColor, palette);
+            } else {
+                // Default handling for other tools (item, custom stuff)
+                html += this.renderColorPicker('Active Color', toolId, hexColor, palette);
             }
         }
 
@@ -121,24 +77,144 @@ class PropertiesPanelUI {
         this.container.innerHTML = html;
         this.currentSelection = { type: 'tool', id: toolId };
 
-        // Bind Color Picker
-        paletteContainer.innerHTML = html;
+        // Bind color pickers
+        this.bindColorPickers(toolId);
+    }
 
-        // Bind Color Picker for this specific tool
-        const colorInput = paletteContainer.querySelector(`#tool-active-color-${targetToolId}`);
-        if (colorInput) {
-            colorInput.addEventListener('change', (e) => {
-                const color = parseInt(e.target.value.replace('#', ''), 16);
-                if (window.buildMode) {
-                    const proto = window.buildMode.toolPrototypes[targetToolId];
-                    if (proto) {
-                        proto.color = color;
-                        this.addToPalette(color, targetToolId); // Pass targetToolId
+    renderWallToolProperties() {
+        const proto = window.buildMode.toolPrototypes['wall'];
+        const color = '#' + (proto?.color || 0x888888).toString(16).padStart(6, '0');
+        const palette = proto?.palette || [];
+
+        let html = '<div class="property-subgroup">';
+        html += '<div class="property-group-title" style="margin-top: 10px; font-size: 0.9em;">🧱 Wall Properties</div>';
+        html += `<div class="info-box" style="margin-bottom: 5px;">Configure new walls</div>`;
+        html += this.renderColorPicker('Color', 'wall', color, palette);
+        html += '</div>';
+        return html;
+    }
+
+    renderFloorToolProperties() {
+        const proto = window.buildMode.toolPrototypes['floor'];
+        const color = '#' + (proto?.color || 0x3a4a5a).toString(16).padStart(6, '0');
+        const palette = proto?.palette || [];
+
+        let html = '<div class="property-subgroup">';
+        html += '<div class="property-group-title" style="margin-top: 10px; font-size: 0.9em;">🟫 Floor Properties</div>';
+        html += `<div class="info-box" style="margin-bottom: 5px;">Configure new floors</div>`;
+        html += this.renderColorPicker('Color', 'floor', color, palette);
+        html += '</div>';
+        return html;
+    }
+
+    renderColorPicker(label, targetToolId, hexColor, palette) {
+        return `<div class="property-row">
+            <span class="property-label">${label}</span>
+            <div style="flex: 1;">
+                <input type="color" id="tool-active-color-${targetToolId}" class="property-input" value="${hexColor}" style="width: 100%;">
+                <div class="palette-container" data-tool-id="${targetToolId}" style="margin-top: 8px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 4px; min-height: 40px; border: 1px solid #444;">
+                    ${this.renderPaletteHTML(palette, targetToolId)}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // Updated to accept targetToolId for onClick binding
+    renderPaletteHTML(palette, targetToolId) {
+        if (!palette || palette.length === 0) return '<div class="palette-empty" style="padding:5px; font-size:10px; color:#666;">No history</div>';
+
+        let html = '<div class="palette-row" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 0; padding: 0;">';
+
+        palette.forEach(color => {
+            const hex = '#' + color.toString(16).padStart(6, '0');
+            html += `<div class="palette-swatch"
+                        title="Color: ${hex}"
+                        style="width: 24px; height: 24px; background-color: ${hex}; border: 1px solid #888; cursor: pointer; box-shadow: 0 0 2px rgba(0,0,0,0.5);"
+                        onclick="window.propertiesPanelUI.selectPaletteColor(${color}, '${targetToolId}')"></div>`;
+        });
+        html += '</div>';
+        return html;
+    }
+
+    bindColorPickers(parentToolId) { // parentToolId is the active tool (e.g. 'room')
+        const bind = (targetToolId) => {
+            const input = document.getElementById(`tool-active-color-${targetToolId}`);
+            if (input) {
+                input.addEventListener('change', (e) => {
+                    const color = parseInt(e.target.value.replace('#', ''), 16);
+                    if (window.buildMode) {
+                        const proto = window.buildMode.toolPrototypes[targetToolId];
+                        if (proto) {
+                            proto.color = color;
+                            // Add to palette for that specific tool, NOT the parent tool necessarily
+                            this.addToPalette(color, targetToolId);
+                        }
+                    }
+                });
+            }
+        };
+
+        if (parentToolId === 'room') {
+            bind('wall');
+            bind('floor');
+        } else {
+            bind(parentToolId);
+        }
+    }
+
+    addToPalette(color, targetToolId) {
+        if (window.buildMode) {
+            let proto;
+            // Use specific tool if requested, otherwise fallback to active tool
+            if (targetToolId) {
+                proto = window.buildMode.toolPrototypes[targetToolId];
+            } else {
+                proto = window.buildMode.getActivePrototype();
+            }
+
+            if (proto) {
+                if (!proto.palette) proto.palette = [];
+                // standard LRU
+                if (!proto.palette.includes(color)) {
+                    proto.palette.unshift(color);
+                    if (proto.palette.length > 10) proto.palette.pop();
+
+                    // Refresh UI if needed. 
+                    // If specific tool was targeted, refresh that tool's view if it's the current selection
+                    // Or if generic, refresh current selection.
+                    if (this.currentSelection && this.currentSelection.type === 'tool') {
+                        // Avoid infinite loops or weird refreshes - only refresh if we are looking at the relevant tool
+                        const activeTool = targetToolId || (window.buildMode.currentTool);
+                        if (this.currentSelection.id === activeTool || this.currentSelection.id === 'room') {
+                            this.showToolProperties(this.currentSelection.id);
+                        }
                     }
                 }
-            });
+            }
         }
-        return paletteContainer;
+    }
+
+    selectPaletteColor(color, targetToolId) {
+        if (window.buildMode) {
+            let proto;
+            let toolId = targetToolId;
+
+            if (toolId) {
+                proto = window.buildMode.toolPrototypes[toolId];
+            } else {
+                proto = window.buildMode.getActivePrototype();
+                // We need the ID to find the input element
+                toolId = window.buildMode.currentTool;
+            }
+
+            if (proto) {
+                proto.color = color;
+                // Update input
+                // We now use specific IDs for all inputs: tool-active-color-{toolId}
+                const input = document.getElementById(`tool-active-color-${toolId}`);
+                if (input) input.value = '#' + color.toString(16).padStart(6, '0');
+            }
+        }
     }
 
     init() {
@@ -677,21 +753,36 @@ class PropertiesPanelUI {
     showEntityProperties(entity) {
         if (!this.container || !entity) return;
 
-        let html = '<div class="property-group">';
-        html += '<div class="property-group-title">Entity Information</div>';
+        // Determine type and render appropriate sheet
+        // Currently we only have Character entities managed via world.characters
+        // But eventually we might have raw Items or Creatures.
 
-        html += this.renderProperty('ID', entity.id);
-        html += this.renderProperty('Type', entity.type);
-        html += this.renderProperty('Position', `${entity.x}, ${entity.y}, ${entity.z}`);
+        // Check if it's a Character (has playerName/class)
+        const isCharacter = entity.playerName !== undefined;
 
-        if (entity.name) {
-            html += this.renderProperty('Name', entity.name);
+        let html = '';
+        if (isCharacter) {
+            html = renderCharacterSheet(this.container, entity, () => {
+                if (renderer) renderer.markDirty();
+            });
+        } else {
+            // Fallback for generic entity
+            html = '<div class="property-group">';
+            html += '<div class="property-group-title">Entity Information</div>';
+            html += this.renderProperty('ID', entity.id);
+            html += this.renderProperty('Type', entity.type || 'Unknown');
+            html += this.renderProperty('Position', `${entity.x || entity.position?.x}, ${entity.y || entity.position?.y}, ${entity.z || entity.position?.z}`);
+            html += '</div>';
         }
-
-        html += '</div>';
 
         this.container.innerHTML = html;
         this.currentSelection = { type: 'entity', id: entity.id };
+
+        if (isCharacter) {
+            bindCharacterEvents(entity, () => {
+                if (renderer) renderer.markDirty();
+            });
+        }
     }
 
     renderProperty(label, value, inputType = null, inputId = null, readonly = false) {

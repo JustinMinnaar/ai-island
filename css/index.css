@@ -6,6 +6,14 @@
 /* 2. Layout (structure) */
 @import url('layout.css');
 
+/* CSS Index - Import all CSS modules */
+
+/* 1. Theme (variables must be loaded first) */
+@import url('theme.css');
+
+/* 2. Layout (structure) */
+@import url('layout.css');
+
 /* 3. Components */
 @import url('components/panels.css');
 @import url('components/buttons.css');
@@ -13,3 +21,4 @@
 @import url('components/properties.css');
 @import url('components/toolbar.css');
 @import url('components/inventory.css');
+@import url('components/hud.css');

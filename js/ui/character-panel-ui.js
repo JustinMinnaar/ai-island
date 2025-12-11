@@ -142,6 +142,15 @@ class CharacterPanelUI {
         this.render();
     }
 
+    openInventory(charId) {
+        const char = world.getCharacter(charId);
+        if (char) {
+            import('./inventory-panel-ui.js').then(module => {
+                module.inventoryPanelUI.show(char);
+            });
+        }
+    }
+
     addSkill() {
         if (!this.selectedCharacter) return;
         this.selectedCharacter.setSkill('New Skill', 0);

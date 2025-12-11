@@ -20,18 +20,39 @@
 <body>
   <!-- Top Bar -->
   <div class="top-bar">
-    <button id="toggle-scene" class="icon-btn active" title="Scene Panel">
-      🌲
-    </button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="toggle-scene" class="icon-btn active" title="Scene Panel">
+        🌲
+      </button>
+      <div class="title">AI Island</div>
+    </div>
 
-    <!-- RPG Panel Buttons -->
-    <button id="types-btn" class="icon-btn" title="Types (GM)">📦</button>
-    <button id="characters-btn" class="icon-btn" title="Characters">👥</button>
-    <button id="inventory-btn" class="icon-btn" title="Inventory">🎒</button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Testing -->
+      <button id="run-tests-btn" class="icon-btn" title="Run Tests">🧪</button>
+      <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
 
-    <button id="toggle-properties" class="icon-btn active" title="Properties">
-      ☰
-    </button>
+      <!-- RPG Panel Buttons -->
+      <button id="types-btn" class="icon-btn" title="Types (GM)">📦</button>
+      <button id="characters-btn" class="icon-btn" title="Characters">👥</button>
+      <button id="inventory-btn" class="icon-btn" title="Inventory">🎒</button>
+
+      <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+
+      <button id="toggle-properties" class="icon-btn active" title="Properties">
+        ☰
+      </button>
+
+      <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+
+      <button id="combat-btn" class="icon-btn danger" title="Start Combat">⚔️</button>
+    </div>
+  </div>
+
+  <!-- Turn Indicator Overlay -->
+  <div id="turn-indicator" class="turn-indicator hidden">
+    <div class="turn-phase">COMBAT PHASE</div>
+    <div class="turn-active">Current: <span id="active-entity-name">--</span></div>
   </div>
 
   <!-- Main Container with Grid Layout -->
@@ -66,16 +87,16 @@
         <p class="text-muted">Select an item to view properties</p>
       </div>
     </aside>
+  </div>
 
-    <!-- Floating Status Footer (Restored) -->
-    <div class="status-footer">
-      <div id="connection-status">Offline</div>
-      <div class="status-dot" id="status-dot"></div> <!-- ID was missing in UI.cacheElements query selector dot -->
-      <span class="separator">•</span>
-      <div id="fps-counter">FPS: --</div>
-      <span class="separator">•</span>
-      <div id="last-update">Sync: --</div>
-    </div>
+  <!-- Floating Status Footer -->
+  <div class="status-footer">
+    <div id="connection-status">Offline</div>
+    <div class="status-dot" id="status-dot"></div>
+    <span class="separator">•</span>
+    <div id="fps-counter">FPS: --</div>
+    <span class="separator">•</span>
+    <div id="last-update">Sync: --</div>
   </div>
 
   <!-- Tooltip -->

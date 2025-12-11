@@ -74,7 +74,7 @@ export class RoomTool extends ToolBase {
                 const newData = { type: CONFIG.GAME.CELL_TYPES.FLOOR, roomNumber: 0, color: floorColor }; // Use Floor Tool Color
 
                 world.setCell(x, 0, z, newData);
-                actions.push(history.createFloorChangeAction(x, 0, z, oldData, newData));
+                actions.push(history.createFloorAction(x, 0, z, newData));
             }
         }
 
@@ -88,7 +88,7 @@ export class RoomTool extends ToolBase {
 
             if (!oldWall) { // Only place if not existing? Or overwrite? Usually overwrite or skip.
                 world.setWall(x, 0, z, dir, newWall);
-                actions.push(history.createWallAddAction(x, 0, z, dir, newWall));
+                actions.push(history.createWallAction(x, 0, z, dir, newWall));
             }
         };
 

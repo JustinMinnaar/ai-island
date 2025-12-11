@@ -1104,168 +1104,192 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -12,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -11,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -9,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -8,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -7,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -6,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -5,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 5,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 6,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 7,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 8,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 9,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -10,
@@ -1321,7 +1345,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -9,
@@ -1482,7 +1507,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -9,
@@ -1538,7 +1564,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -8,
@@ -1699,7 +1726,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -8,
@@ -1755,7 +1783,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -7,
@@ -1916,7 +1945,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -7,
@@ -1972,7 +2002,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -6,
@@ -2133,7 +2164,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -6,
@@ -2189,7 +2221,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -5,
@@ -2350,7 +2383,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -5,
@@ -2406,7 +2440,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
@@ -2469,63 +2504,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
@@ -2567,7 +2611,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -4,
@@ -2623,7 +2668,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -3,
@@ -2686,63 +2732,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -3,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -3,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -3,
@@ -2784,7 +2839,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -3,
@@ -2840,7 +2896,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -2,
@@ -2903,63 +2960,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -2,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -2,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -2,
@@ -3001,7 +3067,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -2,
@@ -3057,7 +3124,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -1,
@@ -3120,63 +3188,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -1,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": -1,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -1,
@@ -3218,7 +3295,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": -1,
@@ -3272,13 +3350,6 @@
     {
       "x": 0,
       "y": 0,
-      "z": -13,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 0,
-      "y": 0,
       "z": -12,
       "type": "floor",
       "roomNumber": 0
@@ -3337,63 +3408,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 0,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 0,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 0,
@@ -3435,7 +3515,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 0,
@@ -3491,7 +3572,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 1,
@@ -3554,63 +3636,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 1,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 1,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 1,
@@ -3652,7 +3743,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 1,
@@ -3708,7 +3800,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 2,
@@ -3771,63 +3864,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 2,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 2,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 2,
@@ -3869,7 +3971,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 2,
@@ -3925,7 +4028,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 3,
@@ -3988,63 +4092,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 3,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 8831972
     },
     {
       "x": 3,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 3,
@@ -4086,7 +4199,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 3,
@@ -4142,7 +4256,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 4,
@@ -4205,63 +4320,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 4,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 14565247
     },
     {
       "x": 4,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 4,
@@ -4303,7 +4427,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 4,
@@ -4359,7 +4484,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
@@ -4422,63 +4548,72 @@
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
@@ -4520,7 +4655,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 5,
@@ -4576,7 +4712,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 6,
@@ -4737,7 +4874,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 6,
@@ -4793,7 +4931,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 7,
@@ -4834,20 +4973,6 @@
       "x": 7,
       "y": 0,
       "z": -7,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 7,
-      "y": 0,
-      "z": -6,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 7,
-      "y": 0,
-      "z": -5,
       "type": "floor",
       "roomNumber": 0
     },
@@ -4954,7 +5079,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 7,
@@ -5010,7 +5136,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 8,
@@ -5051,20 +5178,6 @@
       "x": 8,
       "y": 0,
       "z": -7,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 8,
-      "y": 0,
-      "z": -6,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 8,
-      "y": 0,
-      "z": -5,
       "type": "floor",
       "roomNumber": 0
     },
@@ -5171,7 +5284,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 8,
@@ -5227,7 +5341,8 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 9,
@@ -5268,20 +5383,6 @@
       "x": 9,
       "y": 0,
       "z": -7,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 9,
-      "y": 0,
-      "z": -6,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 9,
-      "y": 0,
-      "z": -5,
       "type": "floor",
       "roomNumber": 0
     },
@@ -5388,7 +5489,8 @@
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 9,
@@ -5444,168 +5546,176 @@
       "y": 0,
       "z": -13,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -12,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -11,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -9,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -8,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -7,
       "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 10,
-      "y": 0,
-      "z": -6,
-      "type": "floor",
-      "roomNumber": 0
-    },
-    {
-      "x": 10,
-      "y": 0,
-      "z": -5,
-      "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": -1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 0,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 1,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 2,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 3,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 4,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 5,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 6,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 7,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 8,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 9,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
       "y": 0,
       "z": 10,
       "type": "floor",
-      "roomNumber": 0
+      "roomNumber": 0,
+      "color": 5234310
     },
     {
       "x": 10,
@@ -6726,6 +6836,30 @@
       "z": 15,
       "type": "floor",
       "roomNumber": 0
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "z": -13,
+      "type": "floor",
+      "roomNumber": 0,
+      "color": 5234310
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "z": -6,
+      "type": "floor",
+      "roomNumber": 0,
+      "color": 5234310
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "z": -5,
+      "type": "floor",
+      "roomNumber": 0,
+      "color": 5234310
     }
   ],
   "walls": [
@@ -7087,13 +7221,6 @@
       "type": "wall"
     },
     {
-      "x": 8,
-      "y": 0,
-      "z": 1,
-      "direction": "east",
-      "type": "wall"
-    },
-    {
       "x": -8,
       "y": 0,
       "z": 2,
@@ -7101,24 +7228,10 @@
       "type": "wall"
     },
     {
-      "x": 8,
-      "y": 0,
-      "z": 2,
-      "direction": "east",
-      "type": "wall"
-    },
-    {
       "x": -8,
       "y": 0,
       "z": 3,
       "direction": "west",
-      "type": "wall"
-    },
-    {
-      "x": 8,
-      "y": 0,
-      "z": 3,
-      "direction": "east",
       "type": "wall"
     },
     {
@@ -7332,53 +7445,102 @@
       "type": "wall"
     },
     {
+      "x": -3,
+      "y": 0,
+      "z": 1,
+      "direction": "west",
+      "type": "wall"
+    },
+    {
       "x": 3,
+      "y": 0,
+      "z": 1,
+      "direction": "east",
+      "type": "wall"
+    },
+    {
+      "x": -3,
+      "y": 0,
+      "z": 2,
+      "direction": "west",
+      "type": "wall"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "z": 2,
+      "direction": "east",
+      "type": "wall"
+    },
+    {
+      "x": -3,
+      "y": 0,
+      "z": 3,
+      "direction": "west",
+      "type": "wall"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "z": 3,
+      "direction": "east",
+      "type": "wall"
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "z": 3,
+      "direction": "west",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": -2,
+      "direction": "east",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": -1,
+      "direction": "east",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 1,
+      "direction": "east",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 2,
+      "direction": "east",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "z": -3,
+      "direction": "west",
+      "type": "wall",
+      "color": 8947848
+    },
+    {
+      "x": 4,
       "y": 0,
       "z": 0,
       "direction": "east",
-      "type": "wall"
-    },
-    {
-      "x": -3,
-      "y": 0,
-      "z": 1,
-      "direction": "west",
-      "type": "wall"
-    },
-    {
-      "x": 3,
-      "y": 0,
-      "z": 1,
-      "direction": "east",
-      "type": "wall"
-    },
-    {
-      "x": -3,
-      "y": 0,
-      "z": 2,
-      "direction": "west",
-      "type": "wall"
-    },
-    {
-      "x": 3,
-      "y": 0,
-      "z": 2,
-      "direction": "east",
-      "type": "wall"
-    },
-    {
-      "x": -3,
-      "y": 0,
-      "z": 3,
-      "direction": "west",
-      "type": "wall"
-    },
-    {
-      "x": 3,
-      "y": 0,
-      "z": 3,
-      "direction": "east",
-      "type": "wall"
+      "type": "wall",
+      "color": 8947848
     }
   ],
   "doors": [
@@ -7393,16 +7555,6 @@
       "requiredItemId": null
     },
     {
-      "x": 8,
-      "y": 0,
-      "z": 0,
-      "direction": "east",
-      "type": "door",
-      "isOpen": true,
-      "pivot": "left",
-      "requiredItemId": null
-    },
-    {
       "x": 0,
       "y": 0,
       "z": -3,
@@ -7411,6 +7563,42 @@
       "isOpen": false,
       "pivot": "left",
       "requiredItemId": null
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": -3,
+      "direction": "north",
+      "type": "door",
+      "isOpen": false,
+      "pivot": "left",
+      "requiredItemId": null,
+      "swing": "out",
+      "color": 9137991
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 4,
+      "direction": "north",
+      "type": "door",
+      "isOpen": false,
+      "pivot": "left",
+      "requiredItemId": null,
+      "swing": "in",
+      "color": 9137991
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "z": 0,
+      "direction": "west",
+      "type": "door",
+      "isOpen": false,
+      "pivot": "left",
+      "requiredItemId": null,
+      "swing": "out",
+      "color": 9137991
     }
   ],
   "entities": [

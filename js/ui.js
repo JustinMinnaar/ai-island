@@ -178,6 +178,67 @@ class UI {
     window.addEventListener('entitySelect', (e) => this.onEntitySelect(e.detail));
     window.addEventListener('selectionClear', () => this.onSelectionClear());
     window.addEventListener('cameraZoom', (e) => this.updateCameraInfo());
+
+    // Turn System Events
+    window.addEventListener('turnUpdate', (e) => this.onTurnUpdate(e.detail));
+
+    // Combat Button
+    const combatBtn = document.getElementById('combat-btn');
+    if (combatBtn) {
+      combatBtn.addEventListener('click', () => {
+        // Need to import turnManager or access via game? 
+        // Since modules are messy, let's use the global game instance or window if available,
+        // or just assume turnManager is globally available or dispatch an event.
+        // game.js exposes turnManager on the game instance. 
+        // And game.js exports 'game'. 
+        // We can import 'game' in this file (already imported? No, only world/renderer/config).
+        // Let's rely on window dispatch for cleaner decoupling if possible, or dynamic import.
+        // Actually, we can just import { turnManager } from './turn-manager.js';
+        // But circular dependency risk? UI <-> Game <-> TurnManager
+        // Let's use dynamic import or dispatch.
+
+        // Dispatch request
+        // Or simpler: access via game if exposed.
+        // Let's check imports.
+        import('./turn-manager.js').then(({ turnManager }) => {
+          if (turnManager.phase === 'COMBAT') {
+            turnManager.endCombat();
+          } else {
+            turnManager.startCombat();
+          }
+        });
+      });
+    }
+  }
+
+  onTurnUpdate(data) {
+    const indicator = document.getElementById('turn-indicator');
+    const nameSpan = document.getElementById('active-entity-name');
+    const btn = document.getElementById('combat-btn');
+
+    if (data.phase === 'COMBAT') {
+      indicator.classList.remove('hidden');
+
+      // Update Active Entity Name
+      const activeEntity = data.turnOrder[data.currentTurnIndex];
+      if (activeEntity) {
+        nameSpan.textContent = activeEntity.name;
+      }
+
+      // Update Button State
+      if (btn) {
+        btn.classList.add('active'); // Pulse or highlight
+        btn.innerHTML = '🛑'; // Stop icon
+        btn.title = "End Combat";
+      }
+    } else {
+      indicator.classList.add('hidden');
+      if (btn) {
+        btn.classList.remove('active');
+        btn.innerHTML = '⚔️';
+        btn.title = "Start Combat";
+      }
+    }
   }
 
   setMode(mode) {
@@ -375,7 +436,7 @@ class UI {
 
       if (entity.type === CONFIG.GAME.ENTITY_TYPES.CREATURE) {
         actionsHtml += `
-          <button class="action-btn">
+          <button class="action-btn" onclick="window.ui.onAttackClick('${entity.id}')">
             <span class="action-icon">⚔️</span>
             <span>Attack</span>
           </button>
@@ -436,6 +497,28 @@ class UI {
     this.elements.lastUpdate.textContent = 'Last update: Just now';
   }
 
+  async onAttackClick(targetId) {
+    const { turnManager } = await import('./turn-manager.js');
+    const { combatSystem } = await import('./combat-system.js');
+
+    if (turnManager.phase !== 'COMBAT') {
+      this.showNotification('Start combat (⚔️) to attack!', 'warning');
+      return;
+    }
+
+    const attackerId = turnManager.activeEntityId;
+    if (!attackerId) {
+      this.showNotification('No active turn!', 'error');
+      return;
+    }
+
+    // Check if attacker is player-controlled (optional)
+    // const attacker = world.getEntity(attackerId);
+    // if (attacker.owner !== 'player') ...
+
+    combatSystem.attack(attackerId, targetId);
+  }
+
   showNotification(message, type = 'info') {
     // Simple notification system
     const notification = document.createElement('div');
@@ -464,3 +547,4 @@ class UI {
 }
 
 export const ui = new UI();
+window.ui = ui; // Expose for onClick handlers

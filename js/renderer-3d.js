@@ -651,26 +651,28 @@ class Renderer3D {
         // 3. Move along that vector
         // Use a percentage of the distance for "smooth" feel relative to depth
         const distance = offset.length();
-        // Constant factor is okay, but user wants to "zoom onto that point".
-        // If we move the camera AND the target, we are panning.
-        // To make the point the "center of the screen", we should shift the controls.target perpendicular to the camera view
-        // to align the target point with the center ray? No, simpler: just move towards it.
-
-        const zoomFactor = 0.2; // Increase responsiveness
-        const dir = delta > 0 ? 1 : -1;
 
         if (distance > 2 && distance < 200) {
-            const moveVec = offset.clone().multiplyScalar(zoomFactor * dir);
-            this.camera.position.add(moveVec);
-            this.controls.target.add(moveVec);
-            // Verify target height stays reasonable?
-            // this.controls.target.y = 0; // Optional: Force ground level target? Or allow flying?
+            const dir = delta > 0 ? 1 : -1;
+            const zoomFactor = 0.2 * dir;
+
+            // 1. Move Camera towards Target Point (3D vector)
+            const moveCam = offset.clone().multiplyScalar(zoomFactor);
+            this.camera.position.add(moveCam);
+
+            // 2. Move Control Target towards Target Point (XZ Plane only)
+            // This prevents the target from sinking underground (the "flying/panning" issue)
+            // ensuring the pivot stays on the ground plane.
+            const offsetTarget = new THREE.Vector3().subVectors(targetPoint, this.controls.target);
+            // Since targetPoint is on ground (y ~ 0) and controls.target is on ground, 
+            // offsetTarget is already flat.
+            const moveTarget = offsetTarget.multiplyScalar(zoomFactor);
+            this.controls.target.add(moveTarget);
         }
 
         this.controls.update();
         return true;
     }
-
 
     centerOn(x, z) {
         if (this.controls) {

@@ -1,0 +1,41 @@
+/* HUD Components */
+
+.turn-indicator {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--color-danger);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    text-align: center;
+    pointer-events: none;
+    /* Let clicks pass through */
+    z-index: var(--z-overlay);
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+    transition: all 0.3s ease;
+}
+
+.turn-indicator.hidden {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+}
+
+.turn-phase {
+    color: var(--color-danger);
+    font-size: 0.8em;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.turn-active {
+    font-size: 1.2em;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+#active-entity-name {
+    color: var(--color-accent-primary);
+}

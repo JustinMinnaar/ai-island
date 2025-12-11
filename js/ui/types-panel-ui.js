@@ -3,6 +3,7 @@ import { typeRegistry } from '../type-registry.js';
 import { assetManager } from '../managers/asset-manager.js';
 import { world } from '../world.js';
 import { renderer } from '../renderer-3d.js';
+import { ui } from '../ui.js';
 
 class TypesPanelUI {
     constructor() {
@@ -88,6 +89,7 @@ class TypesPanelUI {
 
             html += `</div>`;
             html += `<div class="type-actions">`;
+            html += `<button class="small-btn primary" title="Add to World" onclick="typesPanelUI.instantiateType(${type.id})">+ Instance</button>`;
             html += `<button class="small-btn" onclick="typesPanelUI.editType(${type.id})">Edit</button>`;
             html += `<button class="small-btn danger" onclick="typesPanelUI.deleteType(${type.id})">Delete</button>`;
             html += `</div>`;
@@ -103,6 +105,7 @@ class TypesPanelUI {
         this.render();
     }
 
+    // ... (createNewType, editType, showTypeEditor, saveType remain the same) ...
     createNewType() {
         this.showTypeEditor(null);
     }
@@ -114,6 +117,101 @@ class TypesPanelUI {
         }
     }
 
+    // ... (rest of editor methods) ...
+    // Note: To avoid overly large replace blocks, I am assuming the editor methods are unchanged
+    // and focusing on adding instantiateType. 
+    // Wait, I need to keep the file valid. I'll replace from renderTypeList end to the end of file for safety
+    // if I can match the content context.
+
+    // Actually, I'll insert instantiateType before onDragStart and update renderTypeList
+
+    // ...
+
+    async instantiateType(typeId, position = null) {
+        const type = typeRegistry.getType(typeId);
+        if (!type) {
+            console.error('Type not found:', typeId);
+            return;
+        }
+
+        console.log(`✨ Instantiating ${type.category}: ${type.name}`);
+
+        // 1. Determine Position
+        let pos = position;
+        if (!pos) {
+            // Raycast to center of screen
+            const canvas = renderer.canvas;
+            if (canvas) {
+                const centerPos = renderer.screenToWorld(canvas.clientWidth / 2, canvas.clientHeight / 2);
+                if (centerPos) {
+                    pos = centerPos;
+                } else {
+                    ui.showNotification('Could not place instance. Center of view is not on ground.', 'warning');
+                    return;
+                }
+            } else {
+                pos = { x: 0, y: 0, z: 0 }; // Fallback if no canvas/renderer?
+            }
+        }
+
+        // 2. Create Instance
+        let instance;
+        const props = {
+            typeId: type.id,
+            name: type.name,
+            description: type.description,
+            position: pos,
+            owner: 'gm' // Default owner
+        };
+
+        if (type.category === 'item') {
+            const { Item } = await import('../models/Item.js');
+            instance = new Item(props);
+            instance.imageURL = type.imageURL;
+            world.addItemInstance(instance);
+        }
+        else if (type.category === 'creature') {
+            const { Creature } = await import('../models/Creature.js');
+            props.health = { current: type.defaultHP || 10, max: type.defaultHP || 10 };
+            props.skills = type.skills ? JSON.parse(JSON.stringify(type.skills)) : []; // Deep copy
+            instance = new Creature(props);
+            // world.addCreature? No, world treats creatures as entities?
+            // There is no addCreature. world.addCharacter exists.
+            // But scene-panel lists "Creatures" from world.getAllEntities with type='creature'.
+            // So we need to set type='creature' on the object? 
+            // The Item class doesn't have a 'type' property (it has typeId).
+            // But world.js checks `e.type`. 
+            // We must ensure the instance has a `type` property corresponding to the category!
+            instance.type = 'creature';
+        }
+        else if (type.category === 'character') {
+            const { Character } = await import('../character.js');
+            props.race = type.race;
+            props.class = type.class;
+            props.skills = type.skills ? JSON.parse(JSON.stringify(type.skills)) : [];
+            instance = new Character(props);
+            world.addCharacter(instance);
+            instance.type = 'character';
+        }
+
+        // ensure generic item has type
+        if (type.category === 'item' && !instance.type) instance.type = 'item';
+
+        // 3. Add to World Entities (for selection/rendering/scene-panel)
+        world.updateEntity(instance);
+
+        console.log(`✅ Created instance at (${pos.x}, ${pos.y}, ${pos.z})`);
+
+        // 4. Update UI
+        if (renderer) renderer.markDirty();
+        if (window.scenePanelUI) window.scenePanelUI.render();
+    }
+
+    onDragStart(event, typeId) {
+        event.dataTransfer.setData('typeId', typeId);
+        // Also set category if possible, or just look up typeId later
+        event.dataTransfer.effectAllowed = 'copy';
+    }
     showTypeEditor(type) {
         const isNew = !type;
         const category = isNew ? this.currentTab : type.category;
