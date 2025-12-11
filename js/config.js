@@ -67,6 +67,20 @@ export const CONFIG = {
       DELETE_DOOR: 'delete_door'
     },
 
+    // Type system
+    TYPES: {
+      ID_RANGES: {
+        ITEMS: { START: 101, END: 999 },
+        CREATURES: { START: 1001, END: 1999 },
+        CHARACTERS: { START: 2001, END: 2999 }
+      },
+      DEFAULT_INVENTORY_SIZE: { WIDTH: 8, HEIGHT: 4 }
+    },
+
+    // Movement settings
+    MOVE_DISTANCE: 6,  // cells per action
+    RUN_DISTANCE: 12,  // cells per action when running
+
     // Cell scale
     CELL_SIZE: 5, // 5 feet per cell
 

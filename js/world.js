@@ -7,6 +7,8 @@ class World {
         this.walls = new Map(); // Map of "x,y,z,direction" -> wall data
         this.doors = new Map(); // Map of "x,y,z,direction" -> door data
         this.entities = new Map(); // Map of entityId -> entity data
+        this.itemInstances = new Map(); // Map of instanceId -> item instance
+        this.characters = new Map(); // Map of characterId -> character
         this.selectedCell = null;
         this.selectedEntity = null;
         this.selectedEntities = []; // Multiple selection support
@@ -179,6 +181,54 @@ class World {
         });
     }
 
+    // ===== Item Instance Methods =====
+
+    addItemInstance(instance) {
+        this.itemInstances.set(instance.instanceId, instance);
+    }
+
+    removeItemInstance(instanceId) {
+        this.itemInstances.delete(instanceId);
+    }
+
+    getItemInstance(instanceId) {
+        return this.itemInstances.get(instanceId) || null;
+    }
+
+    getItemsAt(x, y, z) {
+        return Array.from(this.itemInstances.values()).filter(item =>
+            item.position.x === x && item.position.y === y && item.position.z === z
+        );
+    }
+
+    getAllItemInstances() {
+        return Array.from(this.itemInstances.values());
+    }
+
+    // ===== Character Methods =====
+
+    addCharacter(character) {
+        this.characters.set(character.id, character);
+    }
+
+    removeCharacter(id) {
+        this.characters.delete(id);
+    }
+
+    getCharacter(id) {
+        return this.characters.get(id) || null;
+    }
+
+    getCharacterAt(x, y, z) {
+        return Array.from(this.characters.values()).find(char =>
+            char.position.x === x && char.position.y === y && char.position.z === z
+        );
+    }
+
+    getAllCharacters() {
+        return Array.from(this.characters.values());
+    }
+
     // ===== Selection Methods =====
 
     selectCell(x, y, z) {
@@ -277,15 +327,19 @@ class World {
             walls: Array.from(this.walls.values()),
             doors: Array.from(this.doors.values()),
             entities: Array.from(this.entities.values()),
+            itemInstances: Array.from(this.itemInstances.values()),
+            characters: Array.from(this.characters.values()).map(char => char.toJSON()),
             bounds: this.bounds
         };
     }
 
-    importFromJSON(data) {
+    async importFromJSON(data) {
         this.cells.clear();
         this.walls.clear();
         this.doors.clear();
         this.entities.clear();
+        this.itemInstances.clear();
+        this.characters.clear();
 
         if (data.cells) {
             data.cells.forEach(cell => this.setCell(cell.x, cell.y, cell.z, cell));
@@ -299,6 +353,16 @@ class World {
         if (data.entities) {
             data.entities.forEach(entity => this.updateEntity(entity));
         }
+        if (data.itemInstances) {
+            data.itemInstances.forEach(item => this.addItemInstance(item));
+        }
+        if (data.characters) {
+            const { Character } = await import('./character.js');
+            data.characters.forEach(charData => {
+                const char = Character.fromJSON(charData);
+                this.addCharacter(char);
+            });
+        }
         if (data.bounds) {
             this.bounds = data.bounds;
         }
@@ -309,6 +373,8 @@ class World {
         this.walls.clear();
         this.doors.clear();
         this.entities.clear();
+        this.itemInstances.clear();
+        this.characters.clear();
         this.clearSelection();
     }
 }

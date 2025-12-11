@@ -10,6 +10,9 @@ import { roomManager } from './room-manager.js';
 import { scenePanelUI } from './scene-panel-ui.js';
 import { propertiesPanelUI } from './properties-panel-ui.js';
 import { panelController } from './panel-controller.js';
+import { typeRegistry } from './type-registry.js';
+import { assetManager } from './managers/asset-manager.js';
+import { loadStarterTypes } from './data/starter-types.js';
 
 // Initialize application
 async function init() {
@@ -55,6 +58,10 @@ async function init() {
 
     // Enable autosave
     storage.enableAutosave(30000); // Every 30 seconds
+
+    // Initialize type system with starter content
+    loadStarterTypes(typeRegistry);
+    console.log('✅ Type system initialized');
 
     // Initialize and start game
     await game.init();
