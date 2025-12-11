@@ -2,6 +2,9 @@
 import { world } from './world.js';
 import { roomManager } from './room-manager.js';
 import { renderer } from './renderer-3d.js';
+import { renderDoorProperties, bindDoorEvents } from './ui/panels/door-properties.js';
+import { renderWallProperties, bindWallEvents } from './ui/panels/wall-properties.js';
+import { renderFloorProperties, bindFloorEvents } from './ui/panels/floor-properties.js';
 
 class PropertiesPanelUI {
     constructor() {
@@ -190,6 +193,12 @@ class PropertiesPanelUI {
 
     // Show wall properties
     showWallProperties(data) {
+        this.currentSelection = renderWallProperties(this.container, data, this.renderProperty.bind(this));
+        bindWallEvents(data);
+    }
+
+    // Legacy method for compatibility
+    _showWallPropertiesOld(data) {
         if (!this.container) return;
 
         const { x, y, z, direction, data: wallData } = data;
@@ -242,6 +251,12 @@ class PropertiesPanelUI {
 
     // Show door properties
     showDoorProperties(data) {
+        this.currentSelection = renderDoorProperties(this.container, data, this.renderProperty.bind(this));
+        bindDoorEvents(data, this.showDoorProperties.bind(this));
+    }
+
+    // Legacy method for compatibility
+    _showDoorPropertiesOld(data) {
         if (!this.container) return;
 
         const { x, y, z, direction, data: doorData } = data;
@@ -408,6 +423,12 @@ class PropertiesPanelUI {
 
     // Show floor properties
     showFloorProperties(data) {
+        this.currentSelection = renderFloorProperties(this.container, data, this.renderProperty.bind(this));
+        bindFloorEvents(data);
+    }
+
+    // Legacy method for compatibility
+    _showFloorPropertiesOld(data) {
         if (!this.container) return;
 
         const { x, y, z, data: floorData } = data;
