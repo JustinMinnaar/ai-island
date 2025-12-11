@@ -21,6 +21,14 @@ export class WallRenderer {
             mesh.castShadow = true;
             mesh.receiveShadow = true;
 
+            // Add userData for raycasting
+            mesh.userData = {
+                type: 'wall',
+                x: wall.x,
+                z: wall.z,
+                direction: wall.direction
+            };
+
             let x = wall.x, z = wall.z;
             switch (wall.direction) {
                 case CONFIG.GAME.EDGE_DIRECTIONS.NORTH:

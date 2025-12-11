@@ -46,8 +46,10 @@ class Game {
             world.setWall(8, 0, z, CONFIG.GAME.EDGE_DIRECTIONS.EAST);
         }
 
-        // Gates (doors on edges)
+        // Gates (doors on edges) - remove walls first, then place doors
+        world.removeWall(0, 0, -8, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
         world.setDoor(0, 0, -8, CONFIG.GAME.EDGE_DIRECTIONS.NORTH, { isOpen: false });
+        world.removeWall(8, 0, 0, CONFIG.GAME.EDGE_DIRECTIONS.EAST);
         world.setDoor(8, 0, 0, CONFIG.GAME.EDGE_DIRECTIONS.EAST, { isOpen: true });
 
         // Inner building
@@ -59,7 +61,9 @@ class Game {
             world.setWall(-3, 0, z, CONFIG.GAME.EDGE_DIRECTIONS.WEST);
             world.setWall(3, 0, z, CONFIG.GAME.EDGE_DIRECTIONS.EAST);
         }
+        world.removeWall(0, 0, -3, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
         world.setDoor(0, 0, -3, CONFIG.GAME.EDGE_DIRECTIONS.NORTH, { isOpen: false });
+
 
         // Add some demo entities
         world.updateEntity({

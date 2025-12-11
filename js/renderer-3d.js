@@ -198,6 +198,54 @@ class Renderer3D {
         return null;
     }
 
+    // Get any object at screen position by raycasting (walls, doors, floors, entities)
+    getObjectAtScreen(screenX, screenY) {
+        const width = this.canvas.clientWidth;
+        const height = this.canvas.clientHeight;
+
+        const x = (screenX / width) * 2 - 1;
+        const y = -(screenY / height) * 2 + 1;
+
+        this.raycaster.setFromCamera({ x, y }, this.camera);
+
+        // Collect all clickable meshes from the scene
+        const clickableMeshes = [];
+        this.scene.traverse((object) => {
+            if (object.userData && object.userData.type &&
+                ['wall', 'door', 'floor', 'entity'].includes(object.userData.type)) {
+                clickableMeshes.push(object);
+            }
+        });
+
+        // Raycast against all clickable meshes
+        const intersects = this.raycaster.intersectObjects(clickableMeshes, true);
+
+        if (intersects.length > 0) {
+            // Get the closest intersection
+            const hit = intersects[0];
+            let targetObject = hit.object;
+
+            // Traverse up to find the parent with userData
+            while (targetObject && (!targetObject.userData || !targetObject.userData.type)) {
+                targetObject = targetObject.parent;
+            }
+
+            if (targetObject && targetObject.userData && targetObject.userData.type) {
+                return {
+                    type: targetObject.userData.type,
+                    x: targetObject.userData.x,
+                    y: targetObject.userData.y || 0,
+                    z: targetObject.userData.z,
+                    direction: targetObject.userData.direction,
+                    distance: hit.distance,
+                    userData: targetObject.userData
+                };
+            }
+        }
+
+        return null;
+    }
+
     worldToScreen(x, y, z) {
         const pos = new THREE.Vector3(x, y, z);
         pos.project(this.camera);

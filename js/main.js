@@ -3,7 +3,6 @@ import { initRenderer } from './renderer-3d.js';
 import { initInput } from './input.js';
 import { game } from './game.js';
 import { ui } from './ui.js';
-import { quickbar } from './quickbar.js';
 import { buildMode } from './build-mode.js';
 import { storage } from './storage.js';
 import { CONFIG } from './config.js';
@@ -36,32 +35,9 @@ async function init() {
         renderer.resize();
     });
 
-    // Listen for mode changes
+    // Listen for mode changes (legacy - may not be needed)
     window.addEventListener('modeChange', (e) => {
         game.setMode(e.detail.mode);
-    });
-
-    // Listen for quickbar mode changes
-    window.addEventListener('quickbarModeChange', (e) => {
-        const mode = e.detail.mode;
-        console.log('📍 Quickbar mode:', mode);
-
-        // Deactivate all modes first
-        buildMode.deactivate();
-
-        // Activate selected mode
-        switch (mode) {
-            case CONFIG.GAME.QUICKBAR_MODES.SELECT:
-                // Default mode, nothing special to activate
-                break;
-            case CONFIG.GAME.QUICKBAR_MODES.BUILD:
-                buildMode.activate();
-                break;
-            case CONFIG.GAME.QUICKBAR_MODES.GENERATE:
-                // TODO: Activate generate mode
-                console.log('⚠️ Generate mode not yet implemented');
-                break;
-        }
     });
 
     // Setup save/load buttons

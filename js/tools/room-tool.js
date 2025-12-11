@@ -1,4 +1,3 @@
-```javascript
 import { CONFIG } from '../config.js';
 import { world } from '../world.js';
 import { history } from '../history.js';
@@ -73,7 +72,7 @@ export class RoomTool extends ToolBase {
 
                 const oldData = world.getCell(x, 0, z);
                 const newData = { type: CONFIG.GAME.CELL_TYPES.FLOOR, roomNumber: 0, color: floorColor }; // Use Floor Tool Color
-                
+
                 world.setCell(x, 0, z, newData);
                 actions.push(history.createFloorChangeAction(x, 0, z, oldData, newData));
             }
@@ -103,7 +102,7 @@ export class RoomTool extends ToolBase {
         }
 
         history.recordBatch(actions, 'CREATE_ROOM');
-        console.log(`🏠 Room created with Wall Color ${ wallColor.toString(16) } and Floor Color ${ floorColor.toString(16) } `);
+        console.log(`🏠 Room created with Wall Color ${wallColor.toString(16)} and Floor Color ${floorColor.toString(16)}`);
     }
 }
-```
+

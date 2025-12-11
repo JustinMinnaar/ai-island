@@ -144,8 +144,32 @@ class PropertiesPanelUI {
             this.showCellProperties(e.detail);
         });
 
-        window.addEventListener('entityselect', (e) => {
+        window.addEventListener('entitySelect', (e) => {
             this.showEntityProperties(e.detail);
+        });
+
+        // Listen for object selection (walls, doors, floors)
+        window.addEventListener('objectSelect', (e) => {
+            const detail = e.detail;
+
+            // Highlight the selected object
+            if (renderer) {
+                renderer.setSelectedObject(detail.type, detail.x, detail.y || 0, detail.z, detail.direction);
+            }
+
+            switch (detail.type) {
+                case 'wall':
+                    this.showWallProperties(detail);
+                    break;
+                case 'door':
+                    this.showDoorProperties(detail);
+                    break;
+                case 'floor':
+                    this.showFloorProperties(detail);
+                    break;
+                default:
+                    this.showCellProperties(detail);
+            }
         });
 
         // Expose global actions
@@ -163,6 +187,219 @@ class PropertiesPanelUI {
             alert('Select tiles in 3D view to add them (Feature coming soon)');
         };
     }
+
+    // Show wall properties
+    showWallProperties(data) {
+        if (!this.container) return;
+
+        const { x, y, z, direction, data: wallData } = data;
+        const color = wallData?.color || 0x888888;
+        const hexColor = '#' + color.toString(16).padStart(6, '0');
+
+        let html = '<div class="property-group">';
+        html += '<div class="property-group-title">🧱 Wall Properties</div>';
+
+        html += this.renderProperty('Position', `${x}, ${y}, ${z}`);
+        html += this.renderProperty('Direction', direction);
+        html += this.renderProperty('Color', hexColor);
+
+        // Editable color
+        html += `<div class="property-row">
+            <span class="property-label">Edit Color</span>
+            <input type="color" id="wall-edit-color" class="property-input" value="${hexColor}">
+        </div>`;
+
+        html += '</div>';
+
+        // Actions
+        html += '<div class="property-group">';
+        html += '<div class="property-group-title">Actions</div>';
+        html += `<button class="action-btn full-width" onclick="window.deleteSelectedWall(${x}, ${y}, ${z}, '${direction}')">
+            <span class="action-icon">🗑️</span> Delete Wall
+        </button>`;
+        html += '</div>';
+
+        this.container.innerHTML = html;
+        this.currentSelection = { type: 'wall', x, y, z, direction };
+
+        // Bind color change
+        const colorInput = document.getElementById('wall-edit-color');
+        if (colorInput) {
+            colorInput.addEventListener('change', (e) => {
+                const newColor = parseInt(e.target.value.replace('#', ''), 16);
+                world.setWall(x, y, z, direction, { ...wallData, color: newColor });
+                if (renderer) renderer.markDirty();
+            });
+        }
+
+        // Expose delete function
+        window.deleteSelectedWall = (wx, wy, wz, wdir) => {
+            world.removeWall(wx, wy, wz, wdir);
+            if (renderer) renderer.markDirty();
+            this.clear();
+        };
+    }
+
+    // Show door properties
+    showDoorProperties(data) {
+        if (!this.container) return;
+
+        const { x, y, z, direction, data: doorData } = data;
+        const isOpen = doorData?.isOpen || false;
+        const isLocked = doorData?.isLocked || false;
+        const pivot = doorData?.pivot || 'left';
+        const swing = doorData?.swing || 'out';
+        const color = doorData?.color || 0x8b6f47;
+        const hexColor = '#' + color.toString(16).padStart(6, '0');
+
+        let html = '<div class="property-group">';
+        html += '<div class="property-group-title">🚪 Door Properties</div>';
+
+        html += this.renderProperty('Position', `${x}, ${y}, ${z}`);
+        html += this.renderProperty('Direction', direction);
+        html += this.renderProperty('Pivot', pivot);
+        html += this.renderProperty('Swing', swing);
+        html += this.renderProperty('Color', hexColor);
+
+        html += '</div>';
+
+        // State Controls
+        html += '<div class="property-group">';
+        html += '<div class="property-group-title">State</div>';
+
+        // Open/Closed Switch
+        html += `<div class="property-row">
+            <span class="property-label">Open</span>
+            <label class="switch">
+                <input type="checkbox" id="door-open-switch" ${isOpen ? 'checked' : ''} ${isLocked ? 'disabled' : ''}>
+                <span class="slider"></span>
+            </label>
+        </div>`;
+
+        // Locked/Unlocked Switch
+        html += `<div class="property-row">
+            <span class="property-label">Locked</span>
+            <label class="switch">
+                <input type="checkbox" id="door-locked-switch" ${isLocked ? 'checked' : ''}>
+                <span class="slider"></span>
+            </label>
+        </div>`;
+
+        html += '</div>';
+
+        // Actions
+        html += '<div class="property-group">';
+        html += '<div class="property-group-title">Actions</div>';
+        html += `<button class="action-btn full-width" onclick="window.deleteSelectedDoor(${x}, ${y}, ${z}, '${direction}')">
+            <span class="action-icon">🗑️</span> Delete Door
+        </button>`;
+        html += '</div>';
+
+        this.container.innerHTML = html;
+        this.currentSelection = { type: 'door', x, y, z, direction };
+
+        // Bind switch events
+        const openSwitch = document.getElementById('door-open-switch');
+        const lockedSwitch = document.getElementById('door-locked-switch');
+
+        if (openSwitch) {
+            openSwitch.addEventListener('change', (e) => {
+                const newOpenState = e.target.checked;
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor && !currentDoor.isLocked) {
+                    world.setDoor(x, y, z, direction, { ...currentDoor, isOpen: newOpenState });
+                    if (renderer) renderer.markDirty();
+                    console.log(`🚪 Door ${newOpenState ? 'opened' : 'closed'}`);
+                }
+            });
+        }
+
+        if (lockedSwitch) {
+            lockedSwitch.addEventListener('change', (e) => {
+                const newLockedState = e.target.checked;
+                const currentDoor = world.getDoor(x, y, z, direction);
+                if (currentDoor) {
+                    // If locking and door is open, close it first
+                    const newState = {
+                        ...currentDoor,
+                        isLocked: newLockedState,
+                        isOpen: newLockedState ? false : currentDoor.isOpen
+                    };
+                    world.setDoor(x, y, z, direction, newState);
+                    if (renderer) renderer.markDirty();
+
+                    // Refresh properties to update disabled state of open switch
+                    this.showDoorProperties({ x, y, z, direction, data: newState });
+                    console.log(`🔒 Door ${newLockedState ? 'locked' : 'unlocked'}`);
+                }
+            });
+        }
+
+        // Expose delete function
+        window.deleteSelectedDoor = (dx, dy, dz, ddir) => {
+            world.removeDoor(dx, dy, dz, ddir);
+            if (renderer) renderer.markDirty();
+            this.clear();
+        };
+    }
+
+
+    // Show floor properties
+    showFloorProperties(data) {
+        if (!this.container) return;
+
+        const { x, y, z, data: floorData } = data;
+        const color = floorData?.color || 0x3a4a5a;
+        const hexColor = '#' + color.toString(16).padStart(6, '0');
+        const roomNumber = floorData?.roomNumber || 0;
+        const room = roomManager.getRoomByNumber(roomNumber);
+        const roomName = room ? room.name : 'None';
+
+        let html = '<div class="property-group">';
+        html += '<div class="property-group-title">🟫 Floor Properties</div>';
+
+        html += this.renderProperty('Position', `${x}, ${y}, ${z}`);
+        html += this.renderProperty('Type', floorData?.type || 'floor');
+        html += this.renderProperty('Room', `${roomName} (#${roomNumber})`);
+        html += this.renderProperty('Color', hexColor);
+
+        // Editable color
+        html += `<div class="property-row">
+            <span class="property-label">Edit Color</span>
+            <input type="color" id="floor-edit-color" class="property-input" value="${hexColor}">
+        </div>`;
+
+        html += '</div>';
+
+        // Actions
+        html += '<div class="property-group">';
+        html += '<div class="property-group-title">Actions</div>';
+        html += `<button class="action-btn full-width" onclick="window.deleteSelectedFloor(${x}, ${y}, ${z})">
+            <span class="action-icon">🗑️</span> Delete Floor
+        </button>`;
+        html += '</div>';
+
+        this.container.innerHTML = html;
+        this.currentSelection = { type: 'floor', x, y, z };
+
+        // Bind color change
+        const colorInput = document.getElementById('floor-edit-color');
+        if (colorInput) {
+            colorInput.addEventListener('change', (e) => {
+                const newColor = parseInt(e.target.value.replace('#', ''), 16);
+                world.setCell(x, y, z, { ...floorData, color: newColor });
+                if (renderer) renderer.markDirty();
+            });
+        }
+
+        // Expose delete function
+        window.deleteSelectedFloor = (fx, fy, fz) => {
+            world.removeCell(fx, fy, fz);
+            if (renderer) renderer.markDirty();
+            this.clear();
+        };
+    }
+
 
     clear() {
         if (!this.container) return;

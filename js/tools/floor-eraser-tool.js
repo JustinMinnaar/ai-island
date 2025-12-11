@@ -58,7 +58,7 @@ export class FloorEraserTool extends ToolBase {
                     const oldData = { ...cell };
 
                     world.removeCell(x, this.startCell.y, z);
-                    actions.push(history.createFloorChangeAction(x, this.startCell.y, z, oldData, null));
+                    actions.push(history.createFloorRemoveAction(x, this.startCell.y, z, oldData));
                     deletedCount++;
                 }
             }

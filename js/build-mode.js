@@ -18,8 +18,8 @@ import { DoorEraserTool } from './tools/door-eraser-tool.js';
 
 class BuildMode {
     constructor() {
-        this.active = false;
-        this.currentToolId = CONFIG.GAME.BUILD_TOOLS.WALL;
+        this.active = true; // Always active now
+        this.currentToolId = CONFIG.GAME.BUILD_TOOLS.SELECT;
         this.brushSize = 1;
         this.eraseMode = false;
         this.activeColor = 0x888888;
@@ -65,7 +65,7 @@ class BuildMode {
         // Create build toolbar
         this.toolbar = document.createElement('div');
         this.toolbar.id = 'build-toolbar';
-        this.toolbar.className = 'build-toolbar hidden';
+        this.toolbar.className = 'build-toolbar'; // Remove 'hidden' class
         this.toolbar.style.cssText = `
             position: absolute;
             bottom: 20px;
@@ -108,6 +108,7 @@ class BuildMode {
         this.toolbar.appendChild(homeBtn);
 
         const tools = [
+            { id: CONFIG.GAME.BUILD_TOOLS.SELECT, icon: '🎯', label: 'Select' },
             { id: CONFIG.GAME.BUILD_TOOLS.WALL, icon: '🧱', label: 'Wall' },
             { id: CONFIG.GAME.BUILD_TOOLS.FLOOR, icon: '⬜', label: 'Floor' },
             { id: CONFIG.GAME.BUILD_TOOLS.DOOR, icon: '🚪', label: 'Door' },
@@ -146,7 +147,11 @@ class BuildMode {
         } else {
             document.body.appendChild(this.toolbar);
         }
+
+        // Set initial tool to SELECT
+        this.setTool(CONFIG.GAME.BUILD_TOOLS.SELECT);
     }
+
 
     activate() {
         this.active = true;
@@ -174,6 +179,14 @@ class BuildMode {
         this.eraseMode = false;
         if (renderer && renderer.setEraseCursor) renderer.setEraseCursor(false);
 
+        // Handle SELECT mode - add crosshair cursor
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (toolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+            canvasContainer.classList.add('select-mode');
+        } else {
+            canvasContainer.classList.remove('select-mode');
+        }
+
         // Update UI
         // Note: Using simpler ID-based selection here
         if (this.toolbar) {
@@ -194,11 +207,16 @@ class BuildMode {
 
         // Update Properties Panel
         if (window.propertiesPanelUI) {
-            window.propertiesPanelUI.showToolProperties(toolId);
+            if (toolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+                window.propertiesPanelUI.clear();
+            } else {
+                window.propertiesPanelUI.showToolProperties(toolId);
+            }
         }
 
         console.log('🔧 Tool changed to:', toolId);
     }
+
 
     startDrawing(worldPos) {
         if (!this.active || !this.currentTool || !worldPos) return;

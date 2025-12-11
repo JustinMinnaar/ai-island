@@ -38,6 +38,14 @@ export class DoorRenderer {
             doorGroup.position.set(bx, 0, bz);
             doorGroup.rotation.y = rotY;
 
+            // Add userData for raycasting
+            doorGroup.userData = {
+                type: 'door',
+                x: door.x,
+                z: door.z,
+                direction: door.direction
+            };
+
             // Pivot Group to handle Hinge rotation
             const pivotGroup = new THREE.Group();
             // If Hinge Right: pivot at +0.5. If Left: -0.5.

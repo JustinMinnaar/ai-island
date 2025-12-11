@@ -19,6 +19,15 @@ export class FloorRenderer {
             // Use cell color or default
             const material = this.getMaterial(cell.color || 0x3a4a5a); // Default floor color
             const mesh = new THREE.Mesh(this.geometry, material);
+
+            // Add userData for raycasting
+            mesh.userData = {
+                type: 'floor',
+                x: cell.x,
+                y: cell.y,
+                z: cell.z
+            };
+
             // Height 0.2, Top at 0 => Center at -0.1
             mesh.position.set(cell.x + 0.5, -0.1, cell.z + 0.5);
             mesh.receiveShadow = true;

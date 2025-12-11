@@ -103,7 +103,11 @@ class InputHandler {
         if (buildMode.active) {
             const tool = buildMode.currentToolId;
 
-            if (tool === CONFIG.GAME.BUILD_TOOLS.WALL || tool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
+            // SELECT mode - no visual cursor, only CSS crosshair
+            if (tool === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+                renderer.setHoverCursor(null);
+            }
+            else if (tool === CONFIG.GAME.BUILD_TOOLS.WALL || tool === CONFIG.GAME.BUILD_TOOLS.DOOR) {
                 // Edge Selection Mode
                 const edge = renderer.getClosestEdge(mouseX, mouseY);
                 if (edge) {
@@ -237,9 +241,100 @@ class InputHandler {
         const worldPos = renderer.screenToWorld(mouseX, mouseY, 0);
         if (!worldPos) return;
 
-        // 2. Handle Interaction (Open/Close Door)
-        // Check edge for door
-        // 2. Handle Interaction (Open/Close Door) OR Selection
+        // 2. SELECT MODE - Check for clickable objects via mesh raycasting
+        if (buildMode.active && buildMode.currentToolId === CONFIG.GAME.BUILD_TOOLS.SELECT) {
+            // Priority  1: Raycast against visual objects (walls, doors, floors, entities)
+            const objectHit = renderer.getObjectAtScreen(mouseX, mouseY);
+            if (objectHit) {
+                const { type, x, y, z, direction } = objectHit;
+
+                // Get the actual object data from world
+                if (type === 'door') {
+                    const door = world.getDoor(x, y, z, direction);
+                    if (door) {
+                        window.dispatchEvent(new CustomEvent('objectSelect', {
+                            detail: { type: 'door', x, y, z, direction, data: door }
+                        }));
+                        console.log(`🎯 Selected door via mesh at (${x}, ${y}, ${z}) ${direction}`);
+                        return;
+                    }
+                } else if (type === 'wall') {
+                    const wall = world.getWall(x, y, z, direction);
+                    if (wall) {
+                        window.dispatchEvent(new CustomEvent('objectSelect', {
+                            detail: { type: 'wall', x, y, z, direction, data: wall }
+                        }));
+                        console.log(`🎯 Selected wall via mesh at (${x}, ${y}, ${z}) ${direction}`);
+                        return;
+                    }
+                } else if (type === 'floor') {
+                    const cell = world.getCell(x, y, z);
+                    if (cell) {
+                        window.dispatchEvent(new CustomEvent('objectSelect', {
+                            detail: { type: 'floor', x, y, z, data: cell }
+                        }));
+                        console.log(`🎯 Selected floor via mesh at (${x}, ${y}, ${z})`);
+                        return;
+                    }
+                } else if (type === 'entity') {
+                    const entities = world.getEntitiesAt(x, y, z);
+                    if (entities.length > 0) {
+                        world.selectEntity(entities[0].id);
+                        this.dispatchEntitySelectEvent(entities[0]);
+                        console.log(`🎯 Selected entity via mesh: ${entities[0].name || entities[0].id}`);
+                        return;
+                    }
+                }
+            }
+
+            // Priority 2: Fallback to edge detection for walls/doors
+            const edge = renderer.getClosestEdge(mouseX, mouseY);
+            if (edge && edge.dist < 0.3) {
+                const door = world.getDoor(edge.x, 0, edge.z, edge.direction);
+                const wall = world.getWall(edge.x, 0, edge.z, edge.direction);
+
+                if (door) {
+                    window.dispatchEvent(new CustomEvent('objectSelect', {
+                        detail: { type: 'door', x: edge.x, y: 0, z: edge.z, direction: edge.direction, data: door }
+                    }));
+                    console.log(`🎯 Selected door via edge at (${edge.x}, 0, ${edge.z}) ${edge.direction}`);
+                    return;
+                } else if (wall) {
+                    window.dispatchEvent(new CustomEvent('objectSelect', {
+                        detail: { type: 'wall', x: edge.x, y: 0, z: edge.z, direction: edge.direction, data: wall }
+                    }));
+                    console.log(`🎯 Selected wall via edge at (${edge.x}, 0, ${edge.z}) ${edge.direction}`);
+                    return;
+                }
+            }
+
+            // Priority 3: Check entities at world position
+            const entities = world.getEntitiesAt(worldPos.x, worldPos.y, worldPos.z);
+            if (entities.length > 0) {
+                world.selectEntity(entities[0].id);
+                this.dispatchEntitySelectEvent(entities[0]);
+                console.log(`🎯 Selected entity: ${entities[0].name || entities[0].id}`);
+                return;
+            }
+
+            // Priority 4: Check floor at world position
+            const cell = world.getCell(worldPos.x, worldPos.y, worldPos.z);
+            if (cell) {
+                window.dispatchEvent(new CustomEvent('objectSelect', {
+                    detail: { type: 'floor', x: worldPos.x, y: worldPos.y, z: worldPos.z, data: cell }
+                }));
+                console.log(`🎯 Selected floor at (${worldPos.x}, ${worldPos.y}, ${worldPos.z})`);
+                return;
+            }
+
+            // Empty cell click
+            world.selectCell(worldPos.x, worldPos.y, worldPos.z);
+            world.selectEntity(null);
+            this.dispatchCellSelectEvent(worldPos);
+            return;
+        }
+
+        // 3. Non-SELECT mode: Interaction logic (open/close doors, etc)
         const edge = renderer.getClosestEdge(mouseX, mouseY);
         if (edge) {
             const door = world.getDoor(edge.x, 0, edge.z, edge.direction);
