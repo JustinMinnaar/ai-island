@@ -1,0 +1,209 @@
+/* Panels - Side panels, modals, tabs */
+
+/* Panel Tabs */
+.panel-tabs {
+    display: flex;
+    border-bottom: var(--border-width) solid var(--color-border);
+    background: var(--color-bg-secondary);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+}
+
+.tab-btn.active {
+    background: var(--color-bg-secondary);
+    border-bottom-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+}
+
+/* Panel Close Button */
+.panel-close {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast);
+}
+
+.panel-close:hover {
+    color: var(--color-text-primary);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    animation: fadeIn var(--transition-fast);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Content */
+.modal-content {
+    background: var(--color-bg-secondary);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp var(--transition-base);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header,
+.modal-footer {
+    padding: var(--spacing-lg);
+    border-bottom: var(--border-width) solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-footer {
+    border-top: var(--border-width) solid var(--color-border);
+    border-bottom: none;
+    gap: var(--spacing-sm);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.modal-close:hover {
+    color: var(--color-text-primary);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* Inventory Panel specific */
+.inventory-panel {
+    top: 400px;
+    height: calc(100vh - 400px);
+}
+
+/* List Items */
+.type-list,
+.character-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.type-item,
+.character-item {
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.type-item:hover,
+.character-item:hover {
+    background: var(--color-surface-hover);
+}
+
+.type-header,
+.character-header {
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-xs);
+}
+
+.type-details,
+.character-details {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.type-id {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+}
+
+.type-actions,
+.character-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+}
+
+/* Title Icon Button */
+.title-icon-btn {
+    background: none;
+    border: none;
+    color: var(--color-error);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    transition: color var(--transition-fast);
+}
+
+.title-icon-btn:hover {
+    color: #ff5252;
+}

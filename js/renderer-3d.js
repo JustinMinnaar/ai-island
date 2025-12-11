@@ -8,6 +8,7 @@ import { world } from './world.js';
 import { WallRenderer } from './renderer/wall-renderer.js';
 import { FloorRenderer } from './renderer/floor-renderer.js';
 import { DoorRenderer } from './renderer/door-renderer.js';
+import { ItemRenderer } from './renderer/item-renderer.js';
 
 class Renderer3D {
     constructor(canvas) {
@@ -38,6 +39,9 @@ class Renderer3D {
         // Selection highlighting
         this.selectedObject = null;
         this.selectionHighlight = null;
+
+        // Item renderer
+        this.itemRenderer = null;
 
         this.init();
     }
@@ -108,6 +112,7 @@ class Renderer3D {
         this.wallRenderer = new WallRenderer(this.scene, (c) => this.getMaterial(c));
         this.floorRenderer = new FloorRenderer(this.scene, (c) => this.getMaterial(c));
         this.doorRenderer = new DoorRenderer(this.scene, (c) => this.getMaterial(c));
+        this.itemRenderer = new ItemRenderer(this.scene, (c) => this.getMaterial(c));
 
         // 9. Resize Handler
         this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -341,6 +346,11 @@ class Renderer3D {
 
         this.syncWorld();
         this.renderPreview();
+
+        // Update item billboards (camera-facing and bobbing)
+        if (this.itemRenderer) {
+            this.itemRenderer.updateBillboards(this.camera);
+        }
 
         this.renderer.render(this.scene, this.camera);
     }

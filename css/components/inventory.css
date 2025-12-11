@@ -1,0 +1,111 @@
+/* Inventory - Grid-based inventory styles */
+
+/* Inventory Grid */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background: var(--color-bg-primary);
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+}
+
+/* Inventory Cell */
+.inventory-cell {
+    aspect-ratio: 1;
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    position: relative;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.inventory-cell:hover {
+    background: var(--color-surface-hover);
+}
+
+.inventory-cell.occupied {
+    background: var(--color-surface-hover);
+}
+
+.inventory-cell.selected {
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 1px var(--color-accent-primary);
+}
+
+/* Inventory Item */
+.inventory-item {
+    position: absolute;
+    inset: 0;
+    background: var(--color-accent-primary);
+    border: var(--border-width) solid var(--color-accent-hover);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    color: white;
+    cursor: grab;
+    transition: transform var(--transition-fast);
+}
+
+.inventory-item:hover {
+    transform: scale(1.05);
+    z-index: var(--z-dropdown);
+}
+
+.inventory-item:active {
+    cursor: grabbing;
+}
+
+.item-name {
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+    padding: var(--spacing-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.item-count {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+
+/* Item Tooltip */
+.item-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-tooltip);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.inventory-item:hover .item-tooltip {
+    opacity: 1;
+}
+
+/* Character Editor */
+.character-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}

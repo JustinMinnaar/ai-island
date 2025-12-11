@@ -101,6 +101,7 @@ class World {
             type: CONFIG.GAME.CELL_TYPES.DOOR,
             isOpen: data.isOpen !== undefined ? data.isOpen : false,
             pivot: data.pivot || CONFIG.GAME.DOOR_PIVOT.LEFT,
+            requiredItemId: data.requiredItemId || null, // Item type ID required to unlock
             ...data
         });
     }

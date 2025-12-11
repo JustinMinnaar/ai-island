@@ -291,21 +291,29 @@ class PropertiesPanelUI {
         html += '<div class="property-group">';
         html += '<div class="property-group-title">Door Configuration</div>';
 
-        // Swing direction
+        // Swing direction (In/Out switch)
         html += `<div class="property-row">
             <span class="property-label">Swing Direction</span>
-            <div class="button-group">
-                <button class="property-btn ${swing === 'in' ? 'active' : ''}" id="door-swing-in">In</button>
-                <button class="property-btn ${swing === 'out' ? 'active' : ''}" id="door-swing-out">Out</button>
+            <div class="switch-options">
+                <span class="switch-label ${swing === 'in' ? 'active' : ''}">In</span>
+                <label class="switch">
+                    <input type="checkbox" id="door-swing-switch" ${swing === 'out' ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span class="switch-label ${swing === 'out' ? 'active' : ''}">Out</span>
             </div>
         </div>`;
 
-        // Hinge side (pivot)
+        // Hinge side (Left/Right switch)
         html += `<div class="property-row">
             <span class="property-label">Hinge Side</span>
-            <div class="button-group">
-                <button class="property-btn ${pivot === 'left' ? 'active' : ''}" id="door-pivot-left">Left</button>
-                <button class="property-btn ${pivot === 'right' ? 'active' : ''}" id="door-pivot-right">Right</button>
+            <div class="switch-options">
+                <span class="switch-label ${pivot === 'left' ? 'active' : ''}">Left</span>
+                <label class="switch">
+                    <input type="checkbox" id="door-pivot-switch" ${pivot === 'right' ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span class="switch-label ${pivot === 'right' ? 'active' : ''}">Right</span>
             </div>
         </div>`;
 
@@ -359,54 +367,32 @@ class PropertiesPanelUI {
             });
         }
 
-        // Bind swing direction buttons
-        const swingInBtn = document.getElementById('door-swing-in');
-        const swingOutBtn = document.getElementById('door-swing-out');
-        if (swingInBtn) {
-            swingInBtn.addEventListener('click', () => {
+        // Bind swing direction switch
+        const swingSwitch = document.getElementById('door-swing-switch');
+        if (swingSwitch) {
+            swingSwitch.addEventListener('change', (e) => {
                 const currentDoor = world.getDoor(x, y, z, direction);
                 if (currentDoor) {
-                    world.setDoor(x, y, z, direction, { ...currentDoor, swing: 'in' });
+                    const newSwing = e.target.checked ? 'out' : 'in';
+                    world.setDoor(x, y, z, direction, { ...currentDoor, swing: newSwing });
                     if (renderer) renderer.markDirty();
-                    swingInBtn.classList.add('active');
-                    swingOutBtn.classList.remove('active');
-                }
-            });
-        }
-        if (swingOutBtn) {
-            swingOutBtn.addEventListener('click', () => {
-                const currentDoor = world.getDoor(x, y, z, direction);
-                if (currentDoor) {
-                    world.setDoor(x, y, z, direction, { ...currentDoor, swing: 'out' });
-                    if (renderer) renderer.markDirty();
-                    swingOutBtn.classList.add('active');
-                    swingInBtn.classList.remove('active');
+                    // Refresh UI to update active states
+                    this.showDoorProperties({ x, y, z, direction, data: world.getDoor(x, y, z, direction) });
                 }
             });
         }
 
-        // Bind hinge side buttons
-        const pivotLeftBtn = document.getElementById('door-pivot-left');
-        const pivotRightBtn = document.getElementById('door-pivot-right');
-        if (pivotLeftBtn) {
-            pivotLeftBtn.addEventListener('click', () => {
+        // Bind hinge side switch
+        const pivotSwitch = document.getElementById('door-pivot-switch');
+        if (pivotSwitch) {
+            pivotSwitch.addEventListener('change', (e) => {
                 const currentDoor = world.getDoor(x, y, z, direction);
                 if (currentDoor) {
-                    world.setDoor(x, y, z, direction, { ...currentDoor, pivot: 'left' });
+                    const newPivot = e.target.checked ? 'right' : 'left';
+                    world.setDoor(x, y, z, direction, { ...currentDoor, pivot: newPivot });
                     if (renderer) renderer.markDirty();
-                    pivotLeftBtn.classList.add('active');
-                    pivotRightBtn.classList.remove('active');
-                }
-            });
-        }
-        if (pivotRightBtn) {
-            pivotRightBtn.addEventListener('click', () => {
-                const currentDoor = world.getDoor(x, y, z, direction);
-                if (currentDoor) {
-                    world.setDoor(x, y, z, direction, { ...currentDoor, pivot: 'right' });
-                    if (renderer) renderer.markDirty();
-                    pivotRightBtn.classList.add('active');
-                    pivotLeftBtn.classList.remove('active');
+                    // Refresh UI to update active states
+                    this.showDoorProperties({ x, y, z, direction, data: world.getDoor(x, y, z, direction) });
                 }
             });
         }

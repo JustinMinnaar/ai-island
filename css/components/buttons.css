@@ -1,0 +1,166 @@
+/* Buttons - All button styles */
+
+/* Base Button */
+button {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Action Button */
+.action-btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-accent-primary);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    min-height: 36px;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+}
+
+.action-btn:active:not(:disabled) {
+    background: var(--color-accent-active);
+}
+
+.action-btn.secondary {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+.action-btn.danger {
+    background: var(--color-error);
+}
+
+.action-btn.danger:hover:not(:disabled) {
+    background: #d32f2f;
+}
+
+.action-btn.full-width {
+    width: 100%;
+}
+
+.action-btn.half-width {
+    flex: 1;
+}
+
+.action-icon {
+    font-size: var(--font-size-lg);
+}
+
+/* Property Button */
+.property-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    min-height: 28px;
+}
+
+.property-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-focus);
+}
+
+.property-btn.active {
+    background: var(--color-accent-primary);
+    color: white;
+    border-color: var(--color-accent-primary);
+}
+
+.property-btn.small {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    min-height: 24px;
+}
+
+/* Button Group */
+.button-group {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.button-group.compact {
+    gap: var(--spacing-xs);
+}
+
+.button-group button {
+    flex: 1;
+}
+
+/* Small Button */
+.small-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-sm);
+    min-height: 24px;
+}
+
+.small-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+.small-btn.danger {
+    color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.small-btn.danger:hover:not(:disabled) {
+    background: var(--color-error);
+    color: white;
+}
+
+/* Tool Button */
+.tool-btn {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xl);
+    transition: all var(--transition-fast);
+}
+
+.tool-btn:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-focus);
+}
+
+.tool-btn.active {
+    background: var(--color-accent-primary);
+    border-color: var(--color-accent-primary);
+    color: white;
+}
+
+/* Door Actions */
+.door-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+}
