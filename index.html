@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Island - An interactive 3D world simulation for AI training and D&D gameplay">
+  <meta name="keywords" content="AI simulation, D&D, 3D world, isometric, game">
+  <meta name="author" content="AI Island">
+  <title>AI Island - Interactive World Simulation</title>
+
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <button id="toggle-scene" class="icon-btn active" title="Scene Panel">
+      🌲
+    </button>
+    <div class="title">⚔️ AI Island</div>
+    <button id="toggle-properties" class="icon-btn active" title="Properties">
+      ☰
+    </button>
+  </div>
+
+  <!-- Main Container with Grid Layout -->
+  <div class="main-container">
+    <!-- Left Panel: Scene Panel -->
+    <aside class="left-panel scene-panel">
+      <div class="panel-header">Scene</div>
+      <div class="scene-tree" id="scene-tree">
+        <!-- Tree will be populated by JavaScript -->
+      </div>
+    </aside>
+
+    <!-- Center: Canvas Container -->
+    <main class="canvas-container">
+      <canvas id="world-canvas"></canvas>
+
+      <!-- Build Toolbar (existing) -->
+      <div class="build-toolbar hidden"></div>
+
+      <!-- Canvas Overlay -->
+      <div class="canvas-overlay">
+        <div class="canvas-control">
+          <span>🖱️ Drag to pan • 🖱️ Scroll to zoom • 🖱️ Click to select</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel: Properties Panel -->
+    <aside class="right-panel properties-panel">
+      <div class="panel-header">Properties</div>
+      <div id="properties-content" class="properties-content">
+        <p class="text-muted">Select an item to view properties</p>
+      </div>
+    </aside>
+
+    <!-- Floating Status Footer (Restored) -->
+    <div class="status-footer">
+      <div id="connection-status">Offline</div>
+      <div class="status-dot" id="status-dot"></div> <!-- ID was missing in UI.cacheElements query selector dot -->
+      <span class="separator">•</span>
+      <div id="fps-counter">FPS: --</div>
+      <span class="separator">•</span>
+      <div id="last-update">Sync: --</div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- Scripts -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

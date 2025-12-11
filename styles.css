@@ -1,0 +1,518 @@
+/* AI Island - New Panel System Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===== CSS Variables ===== */
+:root {
+  /* Colors */
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #121829;
+  --color-bg-tertiary: #1a2235;
+  --color-surface: rgba(26, 34, 53, 0.8);
+  --color-surface-hover: rgba(34, 45, 68, 0.9);
+  --color-accent-primary: #00d4ff;
+  --color-text-primary: #e8edf4;
+  --color-text-secondary: #a0aec0;
+  --color-text-muted: #64748b;
+
+  /* Panel widths */
+  --left-panel-width: 300px;
+  --right-panel-width: 300px;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+
+  /* Transitions */
+  --transition-base: 250ms ease-in-out;
+}
+
+/* ===== Reset & Base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+}
+
+/* ===== Top Bar ===== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 var(--spacing-md);
+  z-index: 100;
+}
+
+.top-bar .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent-primary);
+  flex: 1;
+  text-align: center;
+}
+
+.top-bar .icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-bar .icon-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.top-bar .icon-btn.active {
+  color: var(--color-accent-primary);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+/* ===== Main Container with CSS Grid ===== */
+.main-container {
+  display: grid;
+  grid-template-columns: var(--left-panel-width) 1fr var(--right-panel-width);
+  height: calc(100vh - 50px);
+  transition: grid-template-columns var(--transition-base);
+}
+
+.main-container.hide-left {
+  grid-template-columns: 0 1fr var(--right-panel-width);
+}
+
+.main-container.hide-right {
+  grid-template-columns: var(--left-panel-width) 1fr 0;
+}
+
+.main-container.hide-left.hide-right {
+  grid-template-columns: 0 1fr 0;
+}
+
+/* ===== Panels ===== */
+.left-panel,
+.right-panel {
+  background: var(--color-bg-secondary);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: opacity var(--transition-base);
+}
+
+.right-panel {
+  border-right: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-container.hide-left .left-panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.main-container.hide-right .right-panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel-header {
+  padding: var(--spacing-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-tertiary);
+}
+
+/* ===== Scene Tree ===== */
+.scene-tree {
+  padding: var(--spacing-sm);
+}
+
+.tree-node {
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-base);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.tree-node:hover {
+  background: var(--color-surface-hover);
+}
+
+.tree-node.selected {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--color-accent-primary);
+}
+
+.tree-node .expand-icon {
+  width: 16px;
+  font-size: 0.75rem;
+  transition: transform var(--transition-base);
+}
+
+.tree-node.collapsed .expand-icon {
+  transform: rotate(-90deg);
+}
+
+.tree-node .node-icon {
+  font-size: 1rem;
+}
+
+.tree-node .node-label {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.tree-node .node-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.tree-children {
+  padding-left: var(--spacing-lg);
+}
+
+.tree-children.collapsed {
+  display: none;
+}
+
+/* ===== Properties Panel ===== */
+.properties-content {
+  padding: var(--spacing-md);
+}
+
+.property-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.property-group-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.property-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.property-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.property-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.property-input {
+  background: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  width: 150px;
+}
+
+.property-input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+}
+
+/* ===== Canvas Container ===== */
+.canvas-container {
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+#world-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.canvas-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.canvas-control {
+  background: rgba(10, 14, 26, 0.8);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+/* ===== Build Toolbar ===== */
+.build-toolbar {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-xs);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+.build-toolbar.hidden {
+  display: none;
+}
+
+.build-toolbar button {
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+
+.build-toolbar button:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.build-toolbar button.active {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--color-accent-primary);
+}
+
+/* ===== Utility Classes ===== */
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ===== Scrollbar Styling ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Object Toolbar (Quickbar & Build Toolbar) */
+.quickbar {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(30, 30, 30, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.quickbar-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.quickbar-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light);
+  transform: translateY(-2px);
+}
+
+.quickbar-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 0 15px rgba(var(--color-primary-rgb), 0.4);
+}
+
+.quickbar-btn .tooltip-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  margin-bottom: 5px;
+}
+
+.quickbar-btn:hover .tooltip-text {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Build Toolbar - Reusing quickbar styles but positioned above */
+.build-toolbar {
+  position: absolute;
+  bottom: 6rem;
+  /* Above quickbar */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(30, 30, 30, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.build-toolbar.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+  pointer-events: none;
+}
+
+.build-tool-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.build-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light);
+}
+
+.build-tool-btn.active {
+  background: var(--color-accent);
+  color: white;
+  box-shadow: 0 0 10px rgba(var(--color-accent-rgb), 0.4);
+}
+
+/* Status Footer */
+.status-footer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: #aaa;
+  font-size: 12px;
+  pointer-events: none;
+  /* Let click pass through */
+  z-index: 90;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #4caf50;
+}
+
+.status-dot.disconnected {
+  background-color: #f44336;
+}
+
+.separator {
+  color: #555;
+}

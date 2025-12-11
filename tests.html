@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Island - Automated Tests</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+
+        .test-suite {
+            margin-bottom: 30px;
+        }
+
+        .test-case {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-left: 4px solid #666;
+        }
+
+        .test-case.pass {
+            border-left-color: #00ff00;
+        }
+
+        .test-case.fail {
+            border-left-color: #ff0000;
+            color: #ff6666;
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 AI Island Automated Tests</h1>
+    <div id="test-results"></div>
+    <div id="summary" class="summary"></div>
+
+    <script type="module">
+        import { world } from './js/world.js';
+        import { CONFIG } from './js/config.js';
+        import { storage } from './js/storage.js';
+
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.passed = 0;
+                this.failed = 0;
+            }
+
+            test(name, fn) {
+                this.tests.push({ name, fn });
+            }
+
+            async run() {
+                const resultsDiv = document.getElementById('test-results');
+
+                for (const test of this.tests) {
+                    const testDiv = document.createElement('div');
+                    testDiv.className = 'test-case';
+
+                    try {
+                        await test.fn();
+                        testDiv.classList.add('pass');
+                        testDiv.innerHTML = `✅ ${test.name}`;
+                        this.passed++;
+                    } catch (error) {
+                        testDiv.classList.add('fail');
+                        testDiv.innerHTML = `❌ ${test.name}<br><small>${error.message}</small>`;
+                        this.failed++;
+                    }
+
+                    resultsDiv.appendChild(testDiv);
+                }
+
+                this.showSummary();
+            }
+
+            showSummary() {
+                const summaryDiv = document.getElementById('summary');
+                const total = this.passed + this.failed;
+                const passRate = ((this.passed / total) * 100).toFixed(1);
+
+                summaryDiv.innerHTML = `
+          <strong>Test Summary:</strong><br>
+          Total: ${total} | Passed: ${this.passed} | Failed: ${this.failed}<br>
+          Pass Rate: ${passRate}%
+        `;
+
+                if (this.failed === 0) {
+                    summaryDiv.style.borderLeft = '4px solid #00ff00';
+                } else {
+                    summaryDiv.style.borderLeft = '4px solid #ff0000';
+                }
+            }
+
+            assert(condition, message) {
+                if (!condition) {
+                    throw new Error(message || 'Assertion failed');
+                }
+            }
+
+            assertEqual(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(message || `Expected ${expected}, got ${actual}`);
+                }
+            }
+        }
+
+        // Create test runner
+        const runner = new TestRunner();
+
+        // ===== World Tests =====
+
+        runner.test('World: Set and get cell', () => {
+            world.clear();
+            world.setCell(5, 0, 5, { type: CONFIG.GAME.CELL_TYPES.FLOOR });
+            const cell = world.getCell(5, 0, 5);
+            runner.assert(cell !== null, 'Cell should exist');
+            runner.assertEqual(cell.type, CONFIG.GAME.CELL_TYPES.FLOOR, 'Cell type should be FLOOR');
+        });
+
+        runner.test('World: Set and get wall (edge-based)', () => {
+            world.clear();
+            world.setWall(0, 0, 0, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
+            const wall = world.getWall(0, 0, 0, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
+            runner.assert(wall !== null, 'Wall should exist');
+            runner.assertEqual(wall.direction, CONFIG.GAME.EDGE_DIRECTIONS.NORTH, 'Wall direction should be NORTH');
+        });
+
+        runner.test('World: Set and get door (edge-based)', () => {
+            world.clear();
+            world.setDoor(1, 0, 1, CONFIG.GAME.EDGE_DIRECTIONS.EAST, { isOpen: false });
+            const door = world.getDoor(1, 0, 1, CONFIG.GAME.EDGE_DIRECTIONS.EAST);
+            runner.assert(door !== null, 'Door should exist');
+            runner.assertEqual(door.isOpen, false, 'Door should be closed');
+        });
+
+        runner.test('World: Toggle door', () => {
+            world.clear();
+            world.setDoor(2, 0, 2, CONFIG.GAME.EDGE_DIRECTIONS.SOUTH, { isOpen: false });
+            const isOpen1 = world.toggleDoor(2, 0, 2, CONFIG.GAME.EDGE_DIRECTIONS.SOUTH);
+            runner.assertEqual(isOpen1, true, 'Door should be open after toggle');
+            const isOpen2 = world.toggleDoor(2, 0, 2, CONFIG.GAME.EDGE_DIRECTIONS.SOUTH);
+            runner.assertEqual(isOpen2, false, 'Door should be closed after second toggle');
+        });
+
+        runner.test('World: Add and get entity', () => {
+            world.clear();
+            world.updateEntity({
+                id: 'test1',
+                name: 'Test Entity',
+                type: CONFIG.GAME.ENTITY_TYPES.ITEM,
+                x: 3,
+                y: 0,
+                z: 3
+            });
+            const entity = world.getEntity('test1');
+            runner.assert(entity !== null, 'Entity should exist');
+            runner.assertEqual(entity.name, 'Test Entity', 'Entity name should match');
+        });
+
+        runner.test('World: Get entities at position', () => {
+            world.clear();
+            world.updateEntity({ id: 'e1', x: 5, y: 0, z: 5, type: 'item' });
+            world.updateEntity({ id: 'e2', x: 5.3, y: 0, z: 5.7, type: 'item' });
+            world.updateEntity({ id: 'e3', x: 6, y: 0, z: 6, type: 'item' });
+
+            const entities = world.getEntitiesAt(5, 0, 5);
+            runner.assertEqual(entities.length, 2, 'Should find 2 entities at (5,0,5)');
+        });
+
+        runner.test('World: Remove wall', () => {
+            world.clear();
+            world.setWall(7, 0, 7, CONFIG.GAME.EDGE_DIRECTIONS.WEST);
+            world.removeWall(7, 0, 7, CONFIG.GAME.EDGE_DIRECTIONS.WEST);
+            const wall = world.getWall(7, 0, 7, CONFIG.GAME.EDGE_DIRECTIONS.WEST);
+            runner.assert(wall === null, 'Wall should be removed');
+        });
+
+        runner.test('World: Multi-selection', () => {
+            world.clear();
+            world.updateEntity({ id: 'sel1', x: 0, y: 0, z: 0, type: 'character' });
+            world.updateEntity({ id: 'sel2', x: 1, y: 0, z: 1, type: 'character' });
+
+            world.selectEntity('sel1');
+            runner.assertEqual(world.selectedEntities.length, 1, 'Should have 1 selected entity');
+
+            world.addToSelection('sel2');
+            runner.assertEqual(world.selectedEntities.length, 2, 'Should have 2 selected entities');
+
+            world.removeFromSelection('sel1');
+            runner.assertEqual(world.selectedEntities.length, 1, 'Should have 1 selected entity after removal');
+        });
+
+        // ===== Storage Tests =====
+
+        runner.test('Storage: Export to JSON', () => {
+            world.clear();
+            world.setCell(0, 0, 0, { type: CONFIG.GAME.CELL_TYPES.FLOOR });
+            world.setWall(0, 0, 0, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
+            world.updateEntity({ id: 'exp1', x: 0, y: 0, z: 0, type: 'item' });
+
+            const data = world.exportToJSON();
+            runner.assert(data.cells.length > 0, 'Should export cells');
+            runner.assert(data.walls.length > 0, 'Should export walls');
+            runner.assert(data.entities.length > 0, 'Should export entities');
+        });
+
+        runner.test('Storage: Import from JSON', () => {
+            const testData = {
+                cells: [{ x: 10, y: 0, z: 10, type: CONFIG.GAME.CELL_TYPES.FLOOR }],
+                walls: [{ x: 10, y: 0, z: 10, direction: CONFIG.GAME.EDGE_DIRECTIONS.NORTH }],
+                doors: [{ x: 11, y: 0, z: 11, direction: CONFIG.GAME.EDGE_DIRECTIONS.EAST, isOpen: true }],
+                entities: [{ id: 'imp1', x: 10, y: 0, z: 10, type: 'character', name: 'Imported' }]
+            };
+
+            world.importFromJSON(testData);
+
+            const cell = world.getCell(10, 0, 10);
+            const wall = world.getWall(10, 0, 10, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
+            const door = world.getDoor(11, 0, 11, CONFIG.GAME.EDGE_DIRECTIONS.EAST);
+            const entity = world.getEntity('imp1');
+
+            runner.assert(cell !== null, 'Cell should be imported');
+            runner.assert(wall !== null, 'Wall should be imported');
+            runner.assert(door !== null, 'Door should be imported');
+            runner.assert(entity !== null, 'Entity should be imported');
+            runner.assertEqual(door.isOpen, true, 'Door state should be preserved');
+        });
+
+        runner.test('Storage: LocalStorage save/load', () => {
+            world.clear();
+            world.setCell(20, 0, 20, { type: CONFIG.GAME.CELL_TYPES.FLOOR });
+            world.updateEntity({ id: 'local1', x: 20, y: 0, z: 20, type: 'item', name: 'LocalTest' });
+
+            storage.saveToLocalStorage('test-world');
+
+            world.clear();
+            runner.assertEqual(world.cells.size, 0, 'World should be cleared');
+
+            storage.loadFromLocalStorage('test-world');
+            const cell = world.getCell(20, 0, 20);
+            const entity = world.getEntity('local1');
+
+            runner.assert(cell !== null, 'Cell should be loaded from localStorage');
+            runner.assert(entity !== null, 'Entity should be loaded from localStorage');
+            runner.assertEqual(entity.name, 'LocalTest', 'Entity data should be preserved');
+
+            // Cleanup
+            localStorage.removeItem('test-world');
+        });
+
+        // ===== Configuration Tests =====
+
+        runner.test('Config: Edge directions defined', () => {
+            runner.assert(CONFIG.GAME.EDGE_DIRECTIONS.NORTH !== undefined, 'NORTH direction should be defined');
+            runner.assert(CONFIG.GAME.EDGE_DIRECTIONS.SOUTH !== undefined, 'SOUTH direction should be defined');
+            runner.assert(CONFIG.GAME.EDGE_DIRECTIONS.EAST !== undefined, 'EAST direction should be defined');
+            runner.assert(CONFIG.GAME.EDGE_DIRECTIONS.WEST !== undefined, 'WEST direction should be defined');
+        });
+
+        runner.test('Config: Build tools defined', () => {
+            runner.assert(CONFIG.GAME.BUILD_TOOLS.WALL !== undefined, 'WALL tool should be defined');
+            runner.assert(CONFIG.GAME.BUILD_TOOLS.FLOOR !== undefined, 'FLOOR tool should be defined');
+            runner.assert(CONFIG.GAME.BUILD_TOOLS.DOOR !== undefined, 'DOOR tool should be defined');
+            runner.assert(CONFIG.GAME.BUILD_TOOLS.ROOM !== undefined, 'ROOM tool should be defined');
+        });
+
+        runner.test('Config: Quickbar modes defined', () => {
+            runner.assert(CONFIG.GAME.QUICKBAR_MODES.SELECT !== undefined, 'SELECT mode should be defined');
+            runner.assert(CONFIG.GAME.QUICKBAR_MODES.BUILD !== undefined, 'BUILD mode should be defined');
+            runner.assert(CONFIG.GAME.QUICKBAR_MODES.GENERATE !== undefined, 'GENERATE mode should be defined');
+        });
+
+        // Run all tests
+        console.log('🧪 Running automated tests...');
+        runner.run().then(() => {
+            console.log('✅ Tests complete!');
+        });
+    </script>
+</body>
+
+</html>
