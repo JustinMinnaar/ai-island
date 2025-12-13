@@ -17,7 +17,42 @@ class PropertiesPanelUI {
 
     // ... (init and clear remain same)
 
-    // ... (init and clear remain same)
+    render() {
+        if (!this.currentSelection) {
+            this.clear();
+            return;
+        }
+
+        const sel = this.currentSelection;
+        if (sel.type === 'tool') {
+            this.showToolProperties(sel.id);
+        } else if (sel.type === 'entity') {
+            const entity = world.getEntity(sel.id);
+            if (entity) this.showEntityProperties(entity);
+            else this.clear();
+        } else if (sel.type === 'room') {
+            this.showRoomProperties(sel.id);
+        } else if (sel.type === 'scene') {
+            this.showSceneProperties();
+        } else if (sel.type === 'folder') {
+            if (sel.id === 'rooms') this.showRoomsFolderProperties();
+        } else if (sel.type === 'wall') {
+            const wall = world.getWall(sel.x, sel.y, sel.z, sel.direction);
+            if (wall) this.showWallProperties({ x: sel.x, y: sel.y, z: sel.z, direction: sel.direction, data: wall });
+            else this.clear();
+        } else if (sel.type === 'door') {
+            const door = world.getDoor(sel.x, sel.y, sel.z, sel.direction);
+            if (door) this.showDoorProperties({ x: sel.x, y: sel.y, z: sel.z, direction: sel.direction, data: door });
+            else this.clear();
+        } else if (sel.type === 'floor') {
+            const cell = world.getCell(sel.x, sel.y, sel.z);
+            if (cell) this.showFloorProperties({ x: sel.x, y: sel.y, z: sel.z, data: cell });
+            else this.clear();
+        } else {
+            this.clear();
+        }
+    }
+
 
     showToolProperties(toolId) {
         if (!this.container) return;
@@ -771,7 +806,10 @@ class PropertiesPanelUI {
             html += '<div class="property-group-title">Entity Information</div>';
             html += this.renderProperty('ID', entity.id);
             html += this.renderProperty('Type', entity.type || 'Unknown');
-            html += this.renderProperty('Position', `${entity.x || entity.position?.x}, ${entity.y || entity.position?.y}, ${entity.z || entity.position?.z}`);
+            const px = entity.x ?? entity.position?.x ?? 0;
+            const py = entity.y ?? entity.position?.y ?? 0;
+            const pz = entity.z ?? entity.position?.z ?? 0;
+            html += this.renderProperty('Position', `${px}, ${py}, ${pz}`);
             html += '</div>';
         }
 

@@ -5,6 +5,9 @@ export class Creature extends Item {
     constructor(properties = {}) {
         super(properties);
 
+        // Override object type
+        this.objectType = 'Creature';
+
         // Stats
         this.health = properties.health || { current: 10, max: 10 };
         this.stats = properties.stats || { str: 10, dex: 10, int: 10 };

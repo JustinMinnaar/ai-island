@@ -1,14 +1,25 @@
-// World state management with edge-based walls/doors
+// World state management with object-based architecture
 import { CONFIG } from './config.js';
+import { GameObject } from './models/Object.js';
+import { Floor } from './models/Floor.js';
+import { Wall } from './models/Wall.js';
+import { Door } from './models/Door.js';
+import { Item } from './models/Item.js';
+import { Creature } from './models/Creature.js';
+import { Character } from './character.js';
 
 class World {
     constructor() {
-        this.cells = new Map(); // Map of "x,y,z" -> cell data (floors)
-        this.walls = new Map(); // Map of "x,y,z,direction" -> wall data
-        this.doors = new Map(); // Map of "x,y,z,direction" -> door data
-        this.entities = new Map(); // Map of entityId -> entity data
-        this.itemInstances = new Map(); // Map of instanceId -> item instance
-        this.characters = new Map(); // Map of characterId -> character
+        // All objects stored by ID in a single registry (managed by GameObject)
+        // We keep separate Maps for quick lookups by position/type
+        this.cells = new Map(); // Map of "x,y,z" -> Floor object ID
+        this.walls = new Map(); // Map of "x,y,z,direction" -> Wall object ID
+        this.doors = new Map(); // Map of "x,y,z,direction" -> Door object ID
+        this.entities = new Map(); // Map of entityId -> entity object (legacy, for compatibility)
+        this.itemInstances = new Map(); // Map of item ID -> Item object
+        this.characters = new Map(); // Map of character ID -> Character object
+        this.creatures = new Map(); // Map of creature ID -> Creature object
+
         this.selectedCell = null;
         this.selectedEntity = null;
         this.selectedEntities = []; // Multiple selection support
@@ -22,6 +33,17 @@ class World {
         };
     }
 
+    // ===== Object Management =====
+
+    /**
+     * Get any object by its ID
+     * @param {number} id - Object ID
+     * @returns {GameObject|null}
+     */
+    getObjectById(id) {
+        return GameObject.getObjectById(id);
+    }
+
     // ===== Cell Methods =====
 
     getCellKey(x, y, z) {
@@ -30,21 +52,36 @@ class World {
 
     setCell(x, y, z, data) {
         const key = this.getCellKey(x, y, z);
-        this.cells.set(key, {
+
+        // Create a Floor object instead of plain data
+        const floor = new Floor({
             x, y, z,
-            type: data.type || CONFIG.GAME.CELL_TYPES.FLOOR,
-            roomNumber: data.roomNumber !== undefined ? data.roomNumber : 0, // Default to room 0 (Default Room)
+            name: data.name || `Floor at ${x},${y},${z}`,
+            color: data.color,
+            material: data.material,
+            roomNumber: data.roomNumber !== undefined ? data.roomNumber : 0,
             ...data
         });
+
+        // Store the Floor object's ID in the cells map
+        this.cells.set(key, floor.id);
     }
 
     getCell(x, y, z) {
         const key = this.getCellKey(x, y, z);
-        return this.cells.get(key) || null;
+        const floorId = this.cells.get(key);
+        if (!floorId) return null;
+
+        return this.getObjectById(floorId);
     }
 
     removeCell(x, y, z) {
         const key = this.getCellKey(x, y, z);
+        const floorId = this.cells.get(key);
+        if (floorId) {
+            const floor = this.getObjectById(floorId);
+            if (floor) floor.destroy();
+        }
         this.cells.delete(key);
     }
 
@@ -56,30 +93,52 @@ class World {
 
     setWall(x, y, z, direction, data = {}) {
         const key = this.getWallKey(x, y, z, direction);
-        this.walls.set(key, {
+
+        // Create a Wall object instead of plain data
+        const wall = new Wall({
             x, y, z, direction,
-            type: CONFIG.GAME.CELL_TYPES.WALL,
+            name: data.name || `Wall at ${x},${y},${z} ${direction}`,
+            color: data.color,
+            material: data.material,
+            roomNumber: data.roomNumber,
             ...data
         });
+
+        // Store the Wall object's ID in the walls map
+        this.walls.set(key, wall.id);
     }
 
     getWall(x, y, z, direction) {
         const key = this.getWallKey(x, y, z, direction);
-        return this.walls.get(key) || null;
+        const wallId = this.walls.get(key);
+        if (!wallId) return null;
+
+        return this.getObjectById(wallId);
     }
 
     removeWall(x, y, z, direction) {
         const key = this.getWallKey(x, y, z, direction);
+        const wallId = this.walls.get(key);
+        if (wallId) {
+            const wall = this.getObjectById(wallId);
+            if (wall) wall.destroy();
+        }
         this.walls.delete(key);
     }
 
     getAllWalls() {
-        return Array.from(this.walls.values());
+        const wallIds = Array.from(this.walls.values());
+        return wallIds.map(id => this.getObjectById(id)).filter(w => w !== null);
     }
 
     getWallsAt(x, y, z) {
         const walls = [];
-        const directions = [CONFIG.GAME.EDGE_DIRECTIONS.NORTH, CONFIG.GAME.EDGE_DIRECTIONS.SOUTH, CONFIG.GAME.EDGE_DIRECTIONS.EAST, CONFIG.GAME.EDGE_DIRECTIONS.WEST];
+        const directions = [
+            CONFIG.GAME.EDGE_DIRECTIONS.NORTH,
+            CONFIG.GAME.EDGE_DIRECTIONS.SOUTH,
+            CONFIG.GAME.EDGE_DIRECTIONS.EAST,
+            CONFIG.GAME.EDGE_DIRECTIONS.WEST
+        ];
 
         for (const dir of directions) {
             const wall = this.getWall(x, y, z, dir);
@@ -96,40 +155,57 @@ class World {
 
     setDoor(x, y, z, direction, data = {}) {
         const key = this.getDoorKey(x, y, z, direction);
-        this.doors.set(key, {
+
+        // Create a Door object instead of plain data
+        const door = new Door({
             x, y, z, direction,
-            type: CONFIG.GAME.CELL_TYPES.DOOR,
+            name: data.name || `Door at ${x},${y},${z} ${direction}`,
             isOpen: data.isOpen !== undefined ? data.isOpen : false,
             pivot: data.pivot || CONFIG.GAME.DOOR_PIVOT.LEFT,
-            requiredItemId: data.requiredItemId || null, // Item type ID required to unlock
+            requiredItemId: data.requiredItemId || null,
+            isLocked: data.isLocked !== undefined ? data.isLocked : false,
+            color: data.color,
+            material: data.material,
+            roomNumber: data.roomNumber,
             ...data
         });
+
+        // Store the Door object's ID in the doors map
+        this.doors.set(key, door.id);
     }
 
     getDoor(x, y, z, direction) {
         const key = this.getDoorKey(x, y, z, direction);
-        return this.doors.get(key) || null;
+        const doorId = this.doors.get(key);
+        if (!doorId) return null;
+
+        return this.getObjectById(doorId);
     }
 
     removeDoor(x, y, z, direction) {
         const key = this.getDoorKey(x, y, z, direction);
+        const doorId = this.doors.get(key);
+        if (doorId) {
+            const door = this.getObjectById(doorId);
+            if (door) door.destroy();
+        }
         this.doors.delete(key);
     }
 
     getAllDoors() {
-        return Array.from(this.doors.values());
+        const doorIds = Array.from(this.doors.values());
+        return doorIds.map(id => this.getObjectById(id)).filter(d => d !== null);
     }
 
     toggleDoor(x, y, z, direction) {
         const door = this.getDoor(x, y, z, direction);
         if (door) {
-            door.isOpen = !door.isOpen;
-            return door.isOpen;
+            return door.toggle();
         }
         return null;
     }
 
-    // ===== Entity Methods =====
+    // ===== Entity Methods (Legacy compatibility) =====
 
     updateEntities(entitiesData) {
         if (!entitiesData) return;
@@ -145,24 +221,61 @@ class World {
     }
 
     updateEntity(entityData) {
-        if (this.entities.has(entityData.id)) {
-            const existing = this.entities.get(entityData.id);
-            this.entities.set(entityData.id, { ...existing, ...entityData });
-        } else {
+        // Handle both plain objects and class instances
+        if (entityData instanceof Character) {
+            this.characters.set(entityData.id, entityData);
             this.entities.set(entityData.id, entityData);
+        } else if (entityData instanceof Creature) {
+            this.creatures.set(entityData.id, entityData);
+            this.entities.set(entityData.id, entityData);
+        } else if (entityData instanceof Item) {
+            this.itemInstances.set(entityData.id, entityData);
+            this.entities.set(entityData.id, entityData);
+        } else {
+            // Legacy plain object support
+            if (this.entities.has(entityData.id)) {
+                const existing = this.entities.get(entityData.id);
+                this.entities.set(entityData.id, { ...existing, ...entityData });
+            } else {
+                this.entities.set(entityData.id, entityData);
+            }
         }
     }
 
     removeEntity(id) {
+        const entity = this.getObjectById(id);
+        if (entity) {
+            entity.destroy();
+        }
         this.entities.delete(id);
+        this.characters.delete(id);
+        this.creatures.delete(id);
+        this.itemInstances.delete(id);
     }
 
     getEntity(id) {
+        // Try to get from GameObject registry first
+        const obj = this.getObjectById(id);
+        if (obj) return obj;
+
+        // Fallback to legacy entities map
         return this.entities.get(id) || null;
     }
 
     getAllEntities() {
-        return Array.from(this.entities.values());
+        // Return all entities (items, creatures, characters)
+        const items = Array.from(this.itemInstances.values());
+        const creatures = Array.from(this.creatures.values());
+        const characters = Array.from(this.characters.values());
+
+        // Also include legacy entities that aren't in the new maps
+        const legacyEntities = Array.from(this.entities.values()).filter(e =>
+            !this.itemInstances.has(e.id) &&
+            !this.creatures.has(e.id) &&
+            !this.characters.has(e.id)
+        );
+
+        return [...items, ...creatures, ...characters, ...legacyEntities];
     }
 
     getEntitiesAt(x, y, z) {
@@ -185,10 +298,20 @@ class World {
     // ===== Item Instance Methods =====
 
     addItemInstance(instance) {
-        this.itemInstances.set(instance.instanceId, instance);
+        if (instance instanceof Item) {
+            this.itemInstances.set(instance.id, instance);
+        } else {
+            // Convert plain object to Item instance
+            const item = new Item(instance);
+            this.itemInstances.set(item.id, item);
+        }
     }
 
     removeItemInstance(instanceId) {
+        const item = this.itemInstances.get(instanceId);
+        if (item && item.destroy) {
+            item.destroy();
+        }
         this.itemInstances.delete(instanceId);
     }
 
@@ -198,7 +321,7 @@ class World {
 
     getItemsAt(x, y, z) {
         return Array.from(this.itemInstances.values()).filter(item =>
-            item.position.x === x && item.position.y === y && item.position.z === z
+            item.x === x && item.y === y && item.z === z
         );
     }
 
@@ -209,11 +332,24 @@ class World {
     // ===== Character Methods =====
 
     addCharacter(character) {
-        this.characters.set(character.id, character);
+        if (character instanceof Character) {
+            this.characters.set(character.id, character);
+            this.entities.set(character.id, character);
+        } else {
+            // Convert plain object to Character instance
+            const char = new Character(character);
+            this.characters.set(char.id, char);
+            this.entities.set(char.id, char);
+        }
     }
 
     removeCharacter(id) {
+        const char = this.characters.get(id);
+        if (char && char.destroy) {
+            char.destroy();
+        }
         this.characters.delete(id);
+        this.entities.delete(id);
     }
 
     getCharacter(id) {
@@ -222,12 +358,43 @@ class World {
 
     getCharacterAt(x, y, z) {
         return Array.from(this.characters.values()).find(char =>
-            char.position.x === x && char.position.y === y && char.position.z === z
+            char.x === x && char.y === y && char.z === z
         );
     }
 
     getAllCharacters() {
         return Array.from(this.characters.values());
+    }
+
+    // ===== Creature Methods =====
+
+    addCreature(creature) {
+        if (creature instanceof Creature) {
+            this.creatures.set(creature.id, creature);
+            this.entities.set(creature.id, creature);
+        } else {
+            // Convert plain object to Creature instance
+            const cre = new Creature(creature);
+            this.creatures.set(cre.id, cre);
+            this.entities.set(cre.id, cre);
+        }
+    }
+
+    removeCreature(id) {
+        const creature = this.creatures.get(id);
+        if (creature && creature.destroy) {
+            creature.destroy();
+        }
+        this.creatures.delete(id);
+        this.entities.delete(id);
+    }
+
+    getCreature(id) {
+        return this.creatures.get(id) || null;
+    }
+
+    getAllCreatures() {
+        return Array.from(this.creatures.values());
     }
 
     // ===== Selection Methods =====
@@ -289,11 +456,9 @@ class World {
         updates.forEach(update => {
             switch (update.type) {
                 case 'entity_move':
-                    if (this.entities.has(update.entityId)) {
-                        const entity = this.entities.get(update.entityId);
-                        entity.x = update.x;
-                        entity.y = update.y;
-                        entity.z = update.z;
+                    const entity = this.getEntity(update.entityId);
+                    if (entity) {
+                        entity.setPosition(update.x, update.y, update.z);
                     }
                     break;
 
@@ -323,60 +488,154 @@ class World {
     // ===== Export/Import =====
 
     exportToJSON() {
+        // Get all cells (Floor objects)
+        const cells = [];
+        for (const [key, floorId] of this.cells.entries()) {
+            const floor = this.getObjectById(floorId);
+            if (floor) {
+                cells.push(floor.toJSON());
+            }
+        }
+
+        // Get all walls (Wall objects)
+        const walls = [];
+        for (const [key, wallId] of this.walls.entries()) {
+            const wall = this.getObjectById(wallId);
+            if (wall) {
+                walls.push(wall.toJSON());
+            }
+        }
+
+        // Get all doors (Door objects)
+        const doors = [];
+        for (const [key, doorId] of this.doors.entries()) {
+            const door = this.getObjectById(doorId);
+            if (door) {
+                doors.push(door.toJSON());
+            }
+        }
+
         return {
-            cells: Array.from(this.cells.values()),
-            walls: Array.from(this.walls.values()),
-            doors: Array.from(this.doors.values()),
-            entities: Array.from(this.entities.values()),
-            itemInstances: Array.from(this.itemInstances.values()),
+            cells,
+            walls,
+            doors,
+            entities: Array.from(this.entities.values()).map(e =>
+                e.toJSON ? e.toJSON() : e
+            ),
+            itemInstances: Array.from(this.itemInstances.values()).map(item => item.toJSON()),
+            creatures: Array.from(this.creatures.values()).map(creature => creature.toJSON()),
             characters: Array.from(this.characters.values()).map(char => char.toJSON()),
-            bounds: this.bounds
+            bounds: this.bounds,
+            nextObjectId: GameObject.nextId // Save the next ID for loading
         };
     }
 
     async importFromJSON(data) {
-        this.cells.clear();
-        this.walls.clear();
-        this.doors.clear();
-        this.entities.clear();
-        this.itemInstances.clear();
-        this.characters.clear();
+        // Clear everything
+        this.clear();
 
+        // Reset GameObject ID counter if provided
+        if (data.nextObjectId) {
+            GameObject.resetIdCounter(data.nextObjectId);
+        }
+
+        // Import cells (create Floor objects)
         if (data.cells) {
-            data.cells.forEach(cell => this.setCell(cell.x, cell.y, cell.z, cell));
+            data.cells.forEach(cellData => {
+                this.setCell(cellData.x, cellData.y, cellData.z, cellData);
+            });
         }
+
+        // Import walls (create Wall objects)
         if (data.walls) {
-            data.walls.forEach(wall => this.setWall(wall.x, wall.y, wall.z, wall.direction, wall));
+            data.walls.forEach(wallData => {
+                this.setWall(wallData.x, wallData.y, wallData.z, wallData.direction, wallData);
+            });
         }
+
+        // Import doors (create Door objects)
         if (data.doors) {
-            data.doors.forEach(door => this.setDoor(door.x, door.y, door.z, door.direction, door));
+            data.doors.forEach(doorData => {
+                this.setDoor(doorData.x, doorData.y, doorData.z, doorData.direction, doorData);
+            });
         }
-        if (data.entities) {
-            data.entities.forEach(entity => this.updateEntity(entity));
-        }
+
+        // Import items
         if (data.itemInstances) {
-            data.itemInstances.forEach(item => this.addItemInstance(item));
+            data.itemInstances.forEach(itemData => {
+                const item = Item.fromJSON(itemData);
+                this.addItemInstance(item);
+            });
         }
+
+        // Import creatures
+        if (data.creatures) {
+            data.creatures.forEach(creatureData => {
+                const creature = Creature.fromJSON(creatureData);
+                this.addCreature(creature);
+            });
+        }
+
+        // Import characters
         if (data.characters) {
-            const { Character } = await import('./character.js');
             data.characters.forEach(charData => {
                 const char = Character.fromJSON(charData);
                 this.addCharacter(char);
             });
         }
+
+        // Import legacy entities (for backward compatibility)
+        if (data.entities) {
+            data.entities.forEach(entity => {
+                // Skip if already loaded as item/creature/character
+                if (!this.entities.has(entity.id)) {
+                    this.updateEntity(entity);
+                }
+            });
+        }
+
         if (data.bounds) {
             this.bounds = data.bounds;
         }
     }
 
     clear() {
+        // Destroy all objects
+        for (const [key, id] of this.cells.entries()) {
+            const obj = this.getObjectById(id);
+            if (obj) obj.destroy();
+        }
+        for (const [key, id] of this.walls.entries()) {
+            const obj = this.getObjectById(id);
+            if (obj) obj.destroy();
+        }
+        for (const [key, id] of this.doors.entries()) {
+            const obj = this.getObjectById(id);
+            if (obj) obj.destroy();
+        }
+        for (const [id, obj] of this.itemInstances.entries()) {
+            if (obj.destroy) obj.destroy();
+        }
+        for (const [id, obj] of this.creatures.entries()) {
+            if (obj.destroy) obj.destroy();
+        }
+        for (const [id, obj] of this.characters.entries()) {
+            if (obj.destroy) obj.destroy();
+        }
+
+        // Clear all maps
         this.cells.clear();
         this.walls.clear();
         this.doors.clear();
         this.entities.clear();
         this.itemInstances.clear();
         this.characters.clear();
+        this.creatures.clear();
         this.clearSelection();
+
+        // Clear GameObject registry
+        GameObject.clearRegistry();
+        GameObject.resetIdCounter(1);
     }
 }
 

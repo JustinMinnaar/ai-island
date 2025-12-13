@@ -73,7 +73,7 @@ class TypesPanelUI {
 
         let html = '<div class="type-list">';
         types.forEach(type => {
-            html += `<div class="type-item" draggable="true" ondragstart="typesPanelUI.onDragStart(event, ${type.id})">`;
+            html += `<div class="type-item" draggable="true" ondragstart="typesPanelUI.onDragStart(event, '${type.id}')">`;
             html += `<div class="type-header">`;
             html += `<strong>${type.name}</strong> <span class="type-id">(${type.id})</span>`;
             html += `</div>`;
@@ -89,9 +89,9 @@ class TypesPanelUI {
 
             html += `</div>`;
             html += `<div class="type-actions">`;
-            html += `<button class="small-btn primary" title="Add to World" onclick="typesPanelUI.instantiateType(${type.id})">+ Instance</button>`;
-            html += `<button class="small-btn" onclick="typesPanelUI.editType(${type.id})">Edit</button>`;
-            html += `<button class="small-btn danger" onclick="typesPanelUI.deleteType(${type.id})">Delete</button>`;
+            html += `<button class="small-btn primary" title="Add to World" onclick="typesPanelUI.instantiateType('${type.id}')">+ Instance</button>`;
+            html += `<button class="small-btn" onclick="typesPanelUI.editType('${type.id}')">Edit</button>`;
+            html += `<button class="small-btn danger" onclick="typesPanelUI.deleteType('${type.id}')">Delete</button>`;
             html += `</div>`;
             html += `</div>`;
         });

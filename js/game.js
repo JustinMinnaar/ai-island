@@ -3,6 +3,9 @@ import { CONFIG } from './config.js';
 import { world } from './world.js';
 import { renderer } from './renderer-3d.js';
 import { ui } from './ui.js';
+import { Item } from './models/Item.js';
+import { Creature } from './models/Creature.js';
+import { Character } from './character.js'; // Note path divergence
 
 class Game {
     constructor() {
@@ -111,111 +114,98 @@ class Game {
         world.removeWall(0, 0, -3, CONFIG.GAME.EDGE_DIRECTIONS.NORTH);
         world.setDoor(0, 0, -3, CONFIG.GAME.EDGE_DIRECTIONS.NORTH, { isOpen: false });
 
+        // Create demo entities using new object classes
 
-        // Add some demo entities
-        world.updateEntity({
-            id: 'player1',
-            name: 'Hero',
-            type: CONFIG.GAME.ENTITY_TYPES.CHARACTER,
-            x: 0,
+        // Character (Hero)
+        const hero = new Character({
+            name: 'Sir Codealot',
+            typeId: 'char-hero',
+            description: 'A noble warrior of the keyboard.',
+            x: 4,
             y: 0,
-            z: 0,
-            health: 100,
-            maxHealth: 100
+            z: 4,
+            race: 'Human',
+            class: 'Paladin',
+            health: { current: 30, max: 30 },
+            owner: 'player'
         });
+        world.addCharacter(hero);
 
-        world.updateEntity({
-            id: 'dragon1',
+        // Creature (Goblin)
+        const goblin = new Creature({
+            name: 'Scout Goblin',
+            typeId: 'creature-goblin',
+            description: 'A sneaky goblin scout.',
+            x: 2,
+            y: 0,
+            z: 2,
+            health: { current: 15, max: 20 },
+            owner: 'gm'
+        });
+        world.addCreature(goblin);
+
+        // Creature (Dragon)
+        const dragon = new Creature({
             name: 'Ancient Dragon',
-            type: CONFIG.GAME.ENTITY_TYPES.CREATURE,
+            typeId: 'creature-dragon',
+            description: 'A fearsome ancient dragon.',
             x: 10,
             y: 0,
             z: 10,
-            health: 500,
-            maxHealth: 500
+            health: { current: 500, max: 500 },
+            stats: { str: 20, dex: 12, int: 16 },
+            owner: 'gm'
         });
+        world.addCreature(dragon);
 
-        world.updateEntity({
-            id: 'merchant1',
+        // Item (Treasure Chest)
+        const chest = new Item({
+            name: 'Treasure Chest',
+            typeId: 'item-chest',
+            description: 'Contains loot!',
+            x: 5,
+            y: 0,
+            z: 5,
+            owner: 'gm'
+        });
+        world.addItemInstance(chest);
+
+        // Item (Merchant)
+        const merchant = new Creature({
             name: 'Merchant',
-            type: CONFIG.GAME.ENTITY_TYPES.NPC,
+            typeId: 'npc-merchant',
+            description: 'A traveling merchant.',
             x: -10,
             y: 0,
             z: -10,
-            health: 50,
-            maxHealth: 50
+            health: { current: 50, max: 50 },
+            owner: 'gm'
         });
-
-        world.updateEntity({
-            id: 'treasure1',
-            name: 'Treasure Chest',
-            type: CONFIG.GAME.ENTITY_TYPES.ITEM,
-            x: 5,
-            y: 0,
-            z: 5
-        });
+        world.addCreature(merchant);
 
         ui.updateEntityCount();
         ui.updateEntityList();
 
         console.log('✅ Demo data loaded');
-        console.log(`   ${world.cells.size} floor tiles`);
-        console.log(`   ${world.walls.size} walls`);
-        console.log(`   ${world.doors.size} doors`);
-        console.log(`   ${world.entities.size} entities`);
-    }
+        console.log(`   Floors: ${world.cells.size}`);
+        console.log(`   Walls: ${world.walls.size}`);
+        console.log(`   Doors: ${world.doors.size}`);
+        console.log(`   Characters: ${world.characters.size}`);
+        console.log(`   Creatures: ${world.creatures.size}`);
+        console.log(`   Items: ${world.itemInstances.size}`);
 
-    start() {
-        if (this.isRunning) return;
-
-        this.isRunning = true;
-        this.lastFrameTime = performance.now();
-        this.lastFPSUpdate = performance.now();
-        this.gameLoop();
-
-        console.log('▶️ Game loop started');
-    }
-
-    stop() {
-        this.isRunning = false;
-        console.log('⏸️ Game loop stopped');
-    }
-
-    gameLoop(currentTime = performance.now()) {
-        if (!this.isRunning) return;
-
-        // Calculate delta time
-        const deltaTime = currentTime - this.lastFrameTime;
-        this.lastFrameTime = currentTime;
-
-        // Update FPS counter
-        this.frameCount++;
-        if (currentTime - this.lastFPSUpdate >= 1000) {
-            this.fps = this.frameCount;
-            ui.updateFPS(this.fps);
-            this.frameCount = 0;
-            this.lastFPSUpdate = currentTime;
-        }
-
-        // Update camera info
-        ui.updateCameraInfo();
-
-        // Render
-        renderer.render();
-
-        // Continue loop
-        requestAnimationFrame(this.gameLoop.bind(this));
+        if (renderer) renderer.markDirty();
     }
 
     setMode(mode) {
         this.mode = mode;
-        console.log(`🎮 Mode changed to: ${mode}`);
+        console.log(`🎮 Mode changed to: ${mode} `);
     }
 
     async toggleDoor(x, y, z, direction) {
         const isOpen = world.toggleDoor(x, y, z, direction);
         if (isOpen !== null) {
-            ui.showNotification(`Door ${isOpen ? 'opened' : 'closed'}`, 'success');
+            ui.showNotification(`Door ${isOpen ? 'opened' : 'closed'} `, 'success');
         }
     }
 }

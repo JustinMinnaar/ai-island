@@ -5,19 +5,17 @@ export class Character extends Creature {
     constructor(properties = {}) {
         super(properties);
 
+        // Override object type
+        this.objectType = 'Character';
+
         this.playerName = properties.playerName || ''; // Player controlling this character
         this.race = properties.race || 'Human';
         this.class = properties.class || 'Warrior';
         this.notes = properties.notes || '';
-
-        // Override ID generation if needed, or stick with Item's default
-        if (!properties.id) {
-            this.id = `char_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        }
     }
 
     moveTo(x, y, z) {
-        // Alias for setPosition from Item
+        // Alias for setPosition from GameObject
         this.setPosition(x, y, z);
     }
 

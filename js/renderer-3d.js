@@ -28,6 +28,7 @@ class Renderer3D {
 
         // Cache for previews
         this.previewMeshes = [];
+        this.entityMeshes = []; // Fixed: Initialize entity meshes array
 
         this.hoveredCell = null;
         this.dirty = true;
@@ -302,8 +303,64 @@ class Renderer3D {
     }
 
     rebuildEntities() {
-        // Existing entity logic here (simplified for brevity of this change)
-        // Ideally extract to EntityRenderer
+        // Clear existing entity meshes
+        this.entityMeshes.forEach(mesh => this.scene.remove(mesh));
+        this.entityMeshes = [];
+
+        if (!world) return;
+
+        world.entities.forEach(entity => {
+            let mesh;
+
+            if (entity.type === CONFIG.GAME.ENTITY_TYPES.CREATURE || entity.type === CONFIG.GAME.ENTITY_TYPES.CHARACTER) {
+                // Determine color based on type/owner
+                let color = 0xff0000; // Default Red (Enemy)
+                if (entity.type === 'character' || entity.owner === 'player') {
+                    color = 0x0088ff; // Blue (Hero)
+                } else if (entity.owner === 'neutral') {
+                    color = 0xffff00; // Yellow (Neutral)
+                }
+
+                // Simple Cylinder for Creatures/Characters
+                const geometry = new THREE.CylinderGeometry(0.3, 0.3, 1.5, 16);
+                const material = new THREE.MeshStandardMaterial({ color: color });
+                mesh = new THREE.Mesh(geometry, material);
+
+                // Position (Center of tile, standing on floor)
+                mesh.position.set(entity.x + 0.5, 0.75, entity.z + 0.5);
+
+                // Add "Head" to indicate direction??
+                const head = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 8, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xffcccc })
+                );
+                head.position.y = 0.9;
+                mesh.add(head);
+
+            } else if (entity.type === CONFIG.GAME.ENTITY_TYPES.ITEM) {
+                // Box for Items
+                const geometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+                const material = new THREE.MeshStandardMaterial({ color: 0xaa00aa }); // Purple
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(entity.x + 0.5, 0.2, entity.z + 0.5);
+
+                // Float animation handled in render loop if added to list
+            }
+
+            if (mesh) {
+                // IMPORTANT: type must be 'entity' for getObjectAtScreen raycaster to pick it up
+                mesh.userData = {
+                    id: entity.id,
+                    type: 'entity',
+                    originalType: entity.type,
+                    x: entity.x,
+                    y: entity.y,
+                    z: entity.z
+                };
+                this.scene.add(mesh);
+                this.entityMeshes.push(mesh);
+            }
+        });
     }
 
     render() {
